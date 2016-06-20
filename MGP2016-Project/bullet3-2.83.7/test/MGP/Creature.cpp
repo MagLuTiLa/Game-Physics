@@ -49,7 +49,7 @@ Creature::Creature (btDynamicsWorld* ownerWorld, const btVector3& positionOffset
 		// PONYTAIL
 		transform.setIdentity();
 		transform.setOrigin(btVector3(btScalar(0.05), btScalar(0.8), btScalar(0.0)));
-		m_bodies[Creature::BODYPART_PONYTAIL] = m_ownerWorld->localCreateRigidBody(btScalar(3.0), offset*transform, m_shapes[Creature::BODYPART_PONYTAIL]);
+		m_bodies[Creature::BODYPART_PONYTAIL] = m_ownerWorld->localCreateRigidBody(btScalar(1.0), offset*transform, m_shapes[Creature::BODYPART_PONYTAIL]);
 
 
 		// Add damping to the rigid bodies
@@ -218,11 +218,20 @@ bool Creature::hasFallen() {
 
 btVector3 Creature::computeCenterOfMass() {
 
+	btScalar totalMass = 0.0f;
+	btScalar bodyMass = 0.0f;
 	btVector3 worldCOM(0, 0, 0);
-	for(int i =0;i<BODYPART_COUNT;i++) worldCOM += m_bodies[i]->getCenterOfMassPosition();
+	btVector3 bodyPos(0,0,0);
+	for (int i = 0; i < BODYPART_COUNT; i++)
+	{
+		bodyMass = 1.0f / m_bodies[i]->getInvMass();
+		totalMass += bodyMass;
+		bodyPos = m_bodies[i]->getCenterOfMassPosition()*bodyMass;
+		worldCOM += bodyPos;
+
+	}
 	
-	float denominator = 1.0f / (float)BODYPART_COUNT;
-	//worldCOM *= 1/BODYPART_COUNT; //stupid automatic casting :/
+	float denominator = 1.0f / totalMass;
 	worldCOM *= denominator;
 	return worldCOM;
 	
