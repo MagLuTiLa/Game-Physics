@@ -23,6 +23,8 @@ Creature::Creature (btDynamicsWorld* ownerWorld, const btVector3& positionOffset
 		m_shapes[Creature::BODYPART_LOWER_LEG]->setColor(btVector3(btScalar(0.6),btScalar(0.6),btScalar(0.6)));
 		m_shapes[Creature::BODYPART_UPPER_LEG] = new btCapsuleShape(btScalar(0.05), btScalar(0.40));
 		m_shapes[Creature::BODYPART_UPPER_LEG]->setColor(btVector3(btScalar(0.6),btScalar(0.6),btScalar(0.6)));
+		m_shapes[Creature::BODYPART_PONYTAIL] = new btCapsuleShape(btScalar(0.02), btScalar(0.15));
+		m_shapes[Creature::BODYPART_PONYTAIL]->setColor(btVector3(btScalar(0.6), btScalar(0.6), btScalar(0.6)));
 
 		// Setup the body properties
 		btTransform offset; offset.setIdentity();
@@ -43,6 +45,12 @@ Creature::Creature (btDynamicsWorld* ownerWorld, const btVector3& positionOffset
 		transform.setIdentity();
 		transform.setOrigin(btVector3(btScalar(0.0), btScalar(0.725), btScalar(0.0)));
 		m_bodies[Creature::BODYPART_UPPER_LEG] = m_ownerWorld->localCreateRigidBody(btScalar(3.0), offset*transform, m_shapes[Creature::BODYPART_UPPER_LEG]);
+
+		// PONYTAIL
+		transform.setIdentity();
+		transform.setOrigin(btVector3(btScalar(0.05), btScalar(0.8), btScalar(0.0)));
+		m_bodies[Creature::BODYPART_PONYTAIL] = m_ownerWorld->localCreateRigidBody(btScalar(3.0), offset*transform, m_shapes[Creature::BODYPART_PONYTAIL]);
+
 
 		// Add damping to the rigid bodies
 		for (int i = 0; i < Creature::BODYPART_COUNT; ++i) {
@@ -85,6 +93,19 @@ Creature::Creature (btDynamicsWorld* ownerWorld, const btVector3& positionOffset
 		hingeJoint->setDbgDrawSize(CONSTRAINT_DEBUG_SIZE);
 		m_ownerWorld->addConstraint(m_joints[JOINT_KNEE], true);
 
+		// TAIL
+		localA.setIdentity(); localB.setIdentity();
+		localA.getBasis().setEulerZYX(0, btScalar(M_PI_2), 0); localA.setOrigin(btVector3(btScalar(0.0), btScalar(0.025), btScalar(0.0)));
+		localB.getBasis().setEulerZYX(0, btScalar(M_PI_2), 0); localB.setOrigin(btVector3(btScalar(0.0), btScalar(-0.25), btScalar(0.0)));
+		hingeJoint = new btHingeConstraint(*m_bodies[Creature::BODYPART_UPPER_LEG], *m_bodies[Creature::BODYPART_PONYTAIL], localA, localB);
+		hingeJoint->setLimit(btScalar(-M_PI_2), btScalar(M_PI_2));
+
+		hingeJoint->enableAngularMotor(true,btScalar(0.0),btScalar(50.0)); //uncomment to allow for torque control
+
+		m_joints[Creature::JOINT_TAIL] = hingeJoint;
+		hingeJoint->setDbgDrawSize(CONSTRAINT_DEBUG_SIZE);
+		m_ownerWorld->addConstraint(m_joints[Creature::JOINT_TAIL], true);
+
 }
 
 Creature::~Creature() { // Destructor
@@ -113,11 +134,11 @@ void Creature::switchCOM() {
 	if (m_showCOM) {
 		// Shape
 		m_COMShape = new btSphereShape(btScalar(0.05));
-		m_COMShape->setColor(btVector3(btScalar(0.6),btScalar(1.0),btScalar(0.6)));
+		m_COMShape->setColor(btVector3(btScalar(1.0),btScalar(0.0),btScalar(0.0)));
 		// Body
 		btTransform transform;
 		transform.setIdentity();
-		transform.setOrigin(btVector3(btScalar(0.0), btScalar(0.0), btScalar(0.0)));
+		transform.setOrigin(computeCenterOfMass());
 		m_COM = m_ownerWorld->localCreateRigidBody(btScalar(0.0), transform, m_COMShape);
 		m_COM->setCollisionFlags(m_COM->getCollisionFlags() | btCollisionObject::CF_NO_CONTACT_RESPONSE);
 		m_COM->setActivationState(DISABLE_DEACTIVATION);
@@ -197,8 +218,13 @@ bool Creature::hasFallen() {
 
 btVector3 Creature::computeCenterOfMass() {
 
-	//=================== TODO ==================//
-	return btVector3(0,0,0);
-	//===========================================//
+	btVector3 worldCOM(0, 0, 0);
+	for(int i =0;i<BODYPART_COUNT;i++) worldCOM += m_bodies[i]->getCenterOfMassPosition();
+	
+	float denominator = 1.0f / (float)BODYPART_COUNT;
+	//worldCOM *= 1/BODYPART_COUNT; //stupid automatic casting :/
+	worldCOM *= denominator;
+	return worldCOM;
+	
 
 }
