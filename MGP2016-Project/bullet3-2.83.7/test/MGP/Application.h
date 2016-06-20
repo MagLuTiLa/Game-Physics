@@ -4,6 +4,7 @@
 
 //------------- include/declaration -------------
 #include "OpenGL/GlutDemoApplication.h"
+#include "BulletSoftBody/btSoftBody.h"
 class btBroadphaseInterface;
 class btCollisionShape;
 class btCollisionDispatcher;
@@ -23,6 +24,7 @@ public:
 	virtual ~Application() {	exitPhysics(); } // Destructor
 
 	void initPhysics();				// Initialize the simulation
+	void Init_Torus();
 	void exitPhysics();				// End the simulation
 
 protected:
@@ -42,6 +44,8 @@ protected:
 	btCollisionDispatcher			*	m_dispatcher;	// The displatcher
 	btConstraintSolver				*	m_solver;		// The solver
 	btDefaultCollisionConfiguration	*	m_collisionConfiguration;	// The collision configuration
+	btSoftBodyWorldInfo	m_softBodyWorldInfo;
+	
 
 	DWORD m_startTime;		// Time starter
 	DWORD m_currentTime;	// Time counter

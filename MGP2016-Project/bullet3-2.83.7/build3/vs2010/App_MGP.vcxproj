@@ -53,7 +53,13 @@
     <ClInclude Include="..\..\src\OpenGL\Win32DemoApplication.h" />
     <ClInclude Include="..\..\test\MGP\Application.h" />
     <ClInclude Include="..\..\test\MGP\Creature.h" />
+    <ClInclude Include="..\..\test\MGP\TorusMesh.h" />
     <ClInclude Include="..\..\test\MGP\Scene.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="BulletSoftBody.vcxproj">
+      <Project>{bd350255-a665-0640-bb25-7d72788c7061}</Project>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{5BC12DAE-D759-4362-A19C-8933D5A421B2}</ProjectGuid>

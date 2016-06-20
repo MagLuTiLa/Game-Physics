@@ -16,11 +16,14 @@ subject to the following restrictions:
 
 #include "DemoApplication.h"
 #include "LinearMath/btIDebugDraw.h"
+
+
 #include "BulletDynamics/Dynamics/btDynamicsWorld.h"
 
 #include "BulletDynamics/ConstraintSolver/btPoint2PointConstraint.h"//picking
 #include "BulletDynamics/ConstraintSolver/btGeneric6DofConstraint.h"//picking
 
+//#include "TorusMesh.h"
 #include "BulletCollision/CollisionShapes/btCollisionShape.h"
 #include "BulletCollision/CollisionShapes/btBoxShape.h"
 #include "BulletCollision/CollisionShapes/btSphereShape.h"

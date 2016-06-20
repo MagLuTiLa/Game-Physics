@@ -1,5 +1,11 @@
 
 #include "btBulletDynamicsCommon.h"
+
+#include "BulletSoftBody/btSoftBodyRigidBodyCollisionConfiguration.h"
+#include "BulletSoftBody/btSoftRigidDynamicsWorld.h"
+#include "BulletSoftBody/btSoftBodyHelpers.h"
+#include "BulletSoftBody/btSoftBody.h"
+
 #include "OpenGL/GlutStuff.h"
 #include "OpenGL/GL_ShapeDrawer.h"
 #include "LinearMath/btIDebugDraw.h"
@@ -11,6 +17,7 @@
 #include "Application.h"
 #include "Creature.h"
 #include "Scene.h"
+#include "TorusMesh.h"
 
 void Application::initPhysics() {
 	
@@ -18,13 +25,28 @@ void Application::initPhysics() {
 	// =====================
 	setTexturing(true);
 	setShadows(true);
-	m_collisionConfiguration = new btDefaultCollisionConfiguration();
-	m_dispatcher = new btCollisionDispatcher(m_collisionConfiguration);
+	m_collisionConfiguration = new btSoftBodyRigidBodyCollisionConfiguration();
+	m_dispatcher =  new btCollisionDispatcher(m_collisionConfiguration);
 	btVector3 worldAabbMin(-10000,-10000,-10000);
 	btVector3 worldAabbMax(10000,10000,10000);
-	m_broadphase = new btAxisSweep3 (worldAabbMin, worldAabbMax);
-	m_solver = new btSequentialImpulseConstraintSolver;
-	m_dynamicsWorld = new btDiscreteDynamicsWorld(m_dispatcher,m_broadphase,m_solver,m_collisionConfiguration);
+	m_broadphase = new btAxisSweep3 (worldAabbMin, worldAabbMax, 32766);
+	m_solver = new btSequentialImpulseConstraintSolver();
+	btSoftBodySolver* softBodySolver = 0;
+
+	m_dynamicsWorld = new btSoftRigidDynamicsWorld(m_dispatcher, m_broadphase, m_solver, m_collisionConfiguration, softBodySolver);
+
+	m_dynamicsWorld->setGravity(btVector3(0, -10, 0));
+	m_dynamicsWorld->getDispatchInfo().m_enableSPU = true;
+
+
+	m_softBodyWorldInfo.m_dispatcher = m_dispatcher;
+	m_softBodyWorldInfo.m_broadphase = m_broadphase;
+	m_softBodyWorldInfo.m_sparsesdf.Initialize();
+	m_softBodyWorldInfo.air_density = (btScalar)1.2;
+	m_softBodyWorldInfo.water_density = 0;
+	m_softBodyWorldInfo.water_offset = 0;
+	m_softBodyWorldInfo.water_normal = btVector3(0, 0, 0);
+	m_softBodyWorldInfo.m_gravity.setValue(0, -10, 0);
 
 	// Setup a big ground box
 	// ======================
@@ -43,7 +65,26 @@ void Application::initPhysics() {
 	resetScene(startOffset);
 	clientResetScene();
 	m_startTime = GetTickCount();
-	setCameraDistance(1.5);
+	setCameraDistance(1.5); 
+	Init_Torus();
+}
+
+void Application::Init_Torus()
+{
+	//TRACEDEMO
+	btSoftBody*	psb = btSoftBodyHelpers::CreateFromTriMesh(m_softBodyWorldInfo, gVertices,
+		&gIndices[0][0],
+		NUM_TRIANGLES);
+	psb->generateBendingConstraints(2);
+	psb->m_cfg.piterations = 2;
+	psb->randomizeConstraints();
+	btMatrix3x3	m;
+	m.setEulerZYX(SIMD_PI / 2, 0, 0);
+	psb->transform(btTransform(m, btVector3(0, 4, 0)));
+	psb->scale(btVector3(2, 2, 2));
+	psb->setTotalMass(50, true);
+	((btSoftRigidDynamicsWorld*)m_dynamicsWorld)->addSoftBody(psb);
+
 }
 
 void Application::resetScene(const btVector3& startOffset) {

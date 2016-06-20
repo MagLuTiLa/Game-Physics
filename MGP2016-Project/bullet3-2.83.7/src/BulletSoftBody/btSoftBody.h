@@ -930,12 +930,12 @@ public:
 	// Cast
 	//
 
-	static const btSoftBody*	upcast(btCollisionObject* colObj)
+	/*static const btSoftBody*	upcast(btCollisionObject* colObj)
 	{
 		if (colObj->getInternalType()==CO_SOFT_BODY)
 			return (const btSoftBody*)colObj;
 		return 0;
-	}
+	}*/
 	static btSoftBody*			upcast(btCollisionObject* colObj)
 	{
 		if (colObj->getInternalType()==CO_SOFT_BODY)

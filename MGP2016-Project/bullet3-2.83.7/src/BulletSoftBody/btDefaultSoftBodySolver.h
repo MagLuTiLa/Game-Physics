@@ -54,7 +54,7 @@ public:
 
 	virtual void copySoftBodyToVertexBuffer( const btSoftBody *const softBody, btVertexBufferDescriptor *vertexBuffer );
 
-	virtual void processCollision( btSoftBody *, btCollisionObjectWrapper* );
+	virtual void processCollision( btSoftBody *, struct btCollisionObjectWrapper* );
 
 	virtual void processCollision( btSoftBody*, btSoftBody* );
 
