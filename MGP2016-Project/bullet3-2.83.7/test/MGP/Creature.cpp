@@ -1,6 +1,6 @@
 
 #include "Creature.h"
-#include "PDController.h"
+#include "PIDController.h"
 
 // TO DEBUG
 #include <iostream>
@@ -11,8 +11,20 @@
 #define M_PI       3.14159265358979323846
 #define M_PI_2     1.57079632679489661923
 #define M_PI_4     0.785398163397448309616
+#define EPSILON	   0.0000001f
 
-Creature::Creature (btDynamicsWorld* ownerWorld, const btVector3& positionOffset) : m_ownerWorld (ownerWorld), m_hasFallen(false), lastChange(0), m_showCOM(false) { // Constructor
+// Tune parameters here
+#define K_P_ANKLE	100.0f
+#define K_I_ANKLE	0.0f
+#define K_D_ANKLE	100.0f
+
+#define K_P_KNEE	150.0f
+#define K_I_KNEE	0.0f
+#define K_D_KNEE	10.0f
+
+#define ACTION_BIAS	0.00001f
+
+Creature::Creature (btDynamicsWorld* ownerWorld, const btVector3& positionOffset) : m_ownerWorld (ownerWorld), m_hasFallen(false), lastChange(0), m_showCOM(false), m_time_step(10.0f) { // Constructor
 		
 		// Setup the rigid bodies
 		// ======================
@@ -86,6 +98,17 @@ Creature::Creature (btDynamicsWorld* ownerWorld, const btVector3& positionOffset
 		hingeJoint->setDbgDrawSize(CONSTRAINT_DEBUG_SIZE);
 		m_ownerWorld->addConstraint(m_joints[JOINT_KNEE], true);
 
+		// Setup the PID controllers
+		// =========================
+		PIDController* pidController;
+
+		// ANKLE
+		pidController = new PIDController(K_P_ANKLE, K_I_ANKLE, K_D_ANKLE);
+		m_PIDs[Creature::JOINT_ANKLE] = pidController;
+		
+		// KNEE
+		pidController = new PIDController(K_P_KNEE, K_I_KNEE, K_D_KNEE);
+		m_PIDs[Creature::JOINT_KNEE] = pidController;
 }
 
 Creature::~Creature() { // Destructor
@@ -155,7 +178,7 @@ void Creature::update(int elapsedTime) {
 		return;
 	}			
 
-	if (elapsedTime - lastChange > 10) { // Update balance control only every 10 ms
+	if (elapsedTime - lastChange > m_time_step) { // Update balance control only every 10 ms
 		lastChange = elapsedTime;
 
 		//=================== TODO ===================//
@@ -174,40 +197,41 @@ void Creature::update(int elapsedTime) {
 		btVector3 CSP_project_foot, COM_project_foot;
 		btTransform foot_system = m_bodies[Creature::BODYPART_FOOT]->getWorldTransform().inverse();
 		// Step 3.1: Describe the ground projected CSP in foot coordinate system
-		CSP_project_foot = foot_system * CSP_project;
+		CSP_project_foot = foot_system * CSP_project;	// What for?
 		// Step 3.2: Describe the ground projected COM in foot coordinate system
-		COM_project_foot = foot_system * COM_project;
-		// Step 3.3: Calculate the balance error solveable by an ankle rotation (inverted pendulum model)
-		// Step 3.4: Feed the error to the PD controller and apply resulting 'torque' (here angular motor velocity)
-		// (Conversion between error to torque/motor velocity done by gains in PD controller)
-		
+		COM_project_foot = foot_system * COM_project;	// What for?
+		// Step 3.3: Calculate the balance error solveable by an ankle rotation (inverted pendulum model)		
 		btVector3 errorVect = CSP_project - COM_project;
-		btVector3 newAxisFoot(	1.0f*errorVect.z() + 0.001f,
+		btScalar errorSize = errorVect.norm();
+		if (abs(errorSize) > ACTION_BIAS)	// Put a threshould here
+		{
+			// Get the orthonormal axis where the Hinge rotates around
+			btVector3 newAxis(	-1.0f*errorVect.z() + EPSILON,
 								0.0f,
-								-1.0f*errorVect.x() + 0.001f	);
-		newAxisFoot.normalize();
-		m_joints[0]->setAxis(newAxisFoot);
-		m_joints[0]->setMotorTarget(-1.0f*(100.0f*errorVect.norm()+1.0f*errorVect.norm()/10), 10);
+								1.0f*errorVect.x() + EPSILON	);
+			newAxis.normalize();
 		
-		// KNEE
-		// ----
-		btVector3 CSP_project_leg, COM_project_leg;
-		btTransform leg_system = m_bodies[Creature::BODYPART_LOWER_LEG]->getWorldTransform().inverse();
-		// Step 4.1: Describe the ground projected CSP in lower leg coordinate system
-		CSP_project_leg = leg_system * CSP_project;
-		// Step 4.2: Describe the ground projected COM in lower leg coordinate system
-		COM_project_leg = leg_system * COM_project;
-		// Step 4.3: Calculate the balance error solveable by a knee rotation (inverted pendulum model)
-		// Step 4.4: Feed the error to the PD controller and apply resulting 'torque' (here angular motor velocity)
-		// (Conversion between error to torque/motor velocity done by gains in PD controller)
+			m_joints[Creature::JOINT_ANKLE]->setAxis(newAxis);
+			btScalar torque_ankle = m_PIDs[Creature::JOINT_ANKLE]->solve(errorSize, m_time_step);
+			// Step 3.4: Feed the error to the PD controller and apply resulting 'torque' (here angular motor velocity)
+			// (Conversion between error to torque/motor velocity done by gains in PD controller)
+			m_joints[Creature::JOINT_ANKLE]->setMotorTarget(torque_ankle, m_time_step);
 		
-		btVector3 newAxisKnee(	1.0f*errorVect.z() + 0.001f,
-								0.0f,
-								-1.0f*errorVect.x() + 0.001f	);
-		newAxisKnee.normalize();
-		m_joints[1]->setAxis(newAxisKnee);
-		m_joints[1]->setMotorTarget(-1.0f*(100.0f*errorVect.norm() + 10.0f*errorVect.norm() / 10), 10);
-
+			// KNEE
+			// ----
+			btVector3 CSP_project_leg, COM_project_leg;
+			btTransform leg_system = m_bodies[Creature::BODYPART_LOWER_LEG]->getWorldTransform().inverse();
+			// Step 4.1: Describe the ground projected CSP in lower leg coordinate system
+			CSP_project_leg = leg_system * CSP_project;		// What for?
+			// Step 4.2: Describe the ground projected COM in lower leg coordinate system
+			COM_project_leg = leg_system * COM_project;		// What for?
+			// Step 4.3: Calculate the balance error solveable by a knee rotation (inverted pendulum model)
+			m_joints[Creature::JOINT_KNEE]->setAxis(newAxis);
+			btScalar torque_knee = m_PIDs[Creature::JOINT_KNEE]->solve(errorSize, m_time_step);
+			// Step 4.4: Feed the error to the PD controller and apply resulting 'torque' (here angular motor velocity)
+			// (Conversion between error to torque/motor velocity done by gains in PD controller)
+			m_joints[Creature::JOINT_KNEE]->setMotorTarget(torque_knee, m_time_step);
+		}
 		//===========================================//
 
 	}

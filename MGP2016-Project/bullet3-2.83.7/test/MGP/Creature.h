@@ -4,7 +4,7 @@
 
 #include "btBulletDynamicsCommon.h"
 
-class PDController;
+class PIDController;
 
 class Creature {
 
@@ -40,7 +40,8 @@ protected:
 	btVector3				m_positionCOM;	// Position COM
 	btVector3 computeCenterOfMass();		// Compute the COM of the creature in world coordinate system
 
-	PDController		*	m_pdctrolrs[JOINT_COUNT*3];
+	btScalar				m_time_step;
+	PIDController		*	m_PIDs[JOINT_COUNT];
 };
 
 #endif
