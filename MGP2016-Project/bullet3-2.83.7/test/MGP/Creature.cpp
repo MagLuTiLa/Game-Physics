@@ -14,11 +14,11 @@
 #define EPSILON	   0.0000001f
 
 // Tune parameters here
-#define K_P_ANKLE	100.0f
+#define K_P_ANKLE	150.0f
 #define K_I_ANKLE	0.0f
 #define K_D_ANKLE	100.0f
 
-#define K_P_KNEE	150.0f
+#define K_P_KNEE	100.0f
 #define K_I_KNEE	0.0f
 #define K_D_KNEE	10.0f
 
@@ -211,11 +211,14 @@ void Creature::update(int elapsedTime) {
 								1.0f*errorVect.x() + EPSILON	);
 			newAxis.normalize();
 		
-			m_joints[Creature::JOINT_ANKLE]->setAxis(newAxis);
+			//m_joints[Creature::JOINT_ANKLE]->setAxis(newAxis);
 			btScalar torque_ankle = m_PIDs[Creature::JOINT_ANKLE]->solve(errorSize, m_time_step);
 			// Step 3.4: Feed the error to the PD controller and apply resulting 'torque' (here angular motor velocity)
 			// (Conversion between error to torque/motor velocity done by gains in PD controller)
-			m_joints[Creature::JOINT_ANKLE]->setMotorTarget(torque_ankle, m_time_step);
+			//m_joints[Creature::JOINT_ANKLE]->setMotorTarget(torque_ankle, m_time_step);
+
+			m_joints[Creature::JOINT_ANKLE]->getRigidBodyA().applyTorque(10*newAxis);
+			m_joints[Creature::JOINT_ANKLE]->getRigidBodyB().applyTorque(-10*newAxis);
 		
 			// KNEE
 			// ----
@@ -226,11 +229,14 @@ void Creature::update(int elapsedTime) {
 			// Step 4.2: Describe the ground projected COM in lower leg coordinate system
 			COM_project_leg = leg_system * COM_project;		// What for?
 			// Step 4.3: Calculate the balance error solveable by a knee rotation (inverted pendulum model)
-			m_joints[Creature::JOINT_KNEE]->setAxis(newAxis);
+			//m_joints[Creature::JOINT_KNEE]->setAxis(newAxis);
 			btScalar torque_knee = m_PIDs[Creature::JOINT_KNEE]->solve(errorSize, m_time_step);
 			// Step 4.4: Feed the error to the PD controller and apply resulting 'torque' (here angular motor velocity)
 			// (Conversion between error to torque/motor velocity done by gains in PD controller)
-			m_joints[Creature::JOINT_KNEE]->setMotorTarget(torque_knee, m_time_step);
+			//m_joints[Creature::JOINT_KNEE]->setMotorTarget(torque_knee, m_time_step);
+
+			m_joints[Creature::JOINT_KNEE]->getRigidBodyA().applyTorque(10*newAxis);
+			m_joints[Creature::JOINT_KNEE]->getRigidBodyB().applyTorque(-10*newAxis);
 		}
 		//===========================================//
 
