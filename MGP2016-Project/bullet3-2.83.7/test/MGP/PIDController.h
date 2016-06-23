@@ -11,7 +11,7 @@ public:
 	// Destructor
 	~PIDController() {}
 	// Solve
-	btScalar solve(btScalar &error, btScalar &dt);
+	btScalar solve(btScalar error, btScalar &dt);
 
 private:
 	btScalar _Kp;			// P-Proportion

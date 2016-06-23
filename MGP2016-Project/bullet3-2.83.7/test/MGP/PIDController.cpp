@@ -1,6 +1,6 @@
 #include "PIDController.h"
 
-btScalar PIDController::solve(btScalar &error, btScalar &dt)
+btScalar PIDController::solve(btScalar error, btScalar &dt)
 {
 	// Possible extension to PID by adding an integral term
 	_integral += error * dt;
