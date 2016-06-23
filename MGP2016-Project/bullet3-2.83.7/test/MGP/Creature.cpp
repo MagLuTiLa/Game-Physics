@@ -195,7 +195,7 @@ void Creature::update(int elapsedTime) {
 		// CSP := Centre of Support Polygon, for now use the COM of the foot, because the box is really thin
 		// Step 2: Describe the ground projected CSP in world coordinate system
 
-		btVector3 CSP, CSP_project, COM_project, up_vector(0.0f, 1.0f, 0.0f);
+		btVector3 CSP, CSP_project, COM_project;
 		CSP = m_bodies[Creature::BODYPART_FOOT]->getCenterOfMassPosition();
 		// The ground-projected CSP
 		CSP_project = btVector3(CSP.x(), 0.0f, CSP.z());
