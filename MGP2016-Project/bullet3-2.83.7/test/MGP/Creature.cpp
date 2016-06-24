@@ -14,14 +14,24 @@
 #define EPSILON	   0.0000001f
 #define ACTION_BIAS	0.00001f
 
-// Tune parameters here
-#define K_P_ANKLE	200.0f
-#define K_I_ANKLE	0.01f
-#define K_D_ANKLE	10.0f
+//// Tune parameters here
+//#define K_P_ANKLE	200.0f
+//#define K_I_ANKLE	0.01f
+//#define K_D_ANKLE	10.0f
+//
+//#define K_P_KNEE	150.0f
+//#define K_I_KNEE	0.1f
+//#define K_D_KNEE	10.0f
 
-#define K_P_KNEE	150.0f
-#define K_I_KNEE	0.1f
-#define K_D_KNEE	10.0f
+// Tune parameters here
+#define K_P_ANKLE	0.1f
+#define K_I_ANKLE	0.00f
+#define K_D_ANKLE	0.0f
+
+#define K_P_KNEE	0.15f
+#define K_I_KNEE	0.0f
+#define K_D_KNEE	0.05f
+
 
 // Switch Modes, modify to extend modes
 #if 1
@@ -75,50 +85,81 @@ Creature::Creature (btDynamicsWorld* ownerWorld, const btVector3& positionOffset
 		}
 		m_bodies[Creature::BODYPART_FOOT]->setDamping(btScalar(0.8), btScalar(0.01)); // Higher friction for foot
 
-		// Setup the joint constraints
+	/*	btQuaternion bodyOrientation = m_bodies[Creature::BODYPART_LOWER_LEG]->getOrientation();
+		std::cout << bodyOrientation.x() << " " << bodyOrientation.y() << " "
+		<< bodyOrientation.z() << " " << bodyOrientation.w() << std::endl;
+		btVector3 ooo = QuaternionToEulerXYZ(bodyOrientation);
+		std::cout << ooo.x() << " " << ooo.y() << " " << ooo.z() << std::endl;*/
+
+		// Setup the hinge joint constraints
 		// ===========================
 
-		btHingeConstraint* hingeJoint;
-		//FYI, another type of joint is for example: btConeTwistConstraint* coneJoint;
-		btTransform localA, localB;
-		
-		// ANKLE
-		localA.setIdentity(); localB.setIdentity();
-		localA.getBasis().setEulerZYX(0,btScalar(M_PI_2),0); localA.setOrigin(btVector3(btScalar(0.0), btScalar(0.025), btScalar(0.0)));
-		localB.getBasis().setEulerZYX(0,btScalar(M_PI_2),0); localB.setOrigin(btVector3(btScalar(0.0), btScalar(-0.25), btScalar(0.0)));
-		hingeJoint =  new btHingeConstraint(*m_bodies[Creature::BODYPART_FOOT], *m_bodies[Creature::BODYPART_LOWER_LEG], localA, localB);
-		hingeJoint->setLimit(btScalar(-M_PI_2), btScalar(M_PI_2));
-		
-		hingeJoint->enableAngularMotor(true,btScalar(0.0),btScalar(50.0)); //uncomment to allow for torque control
-		
-		m_joints[Creature::JOINT_ANKLE] = hingeJoint;
-		hingeJoint->setDbgDrawSize(CONSTRAINT_DEBUG_SIZE);
-		m_ownerWorld->addConstraint(m_joints[Creature::JOINT_ANKLE], true);
+		//btHingeConstraint* hingeJoint;
+		////FYI, another type of joint is for example: btConeTwistConstraint* coneJoint;
+		//btTransform localA, localB;
+		//
+		//// ANKLE
+		//localA.setIdentity(); localB.setIdentity();
+		//localA.getBasis().setEulerZYX(0,btScalar(M_PI_2),0); localA.setOrigin(btVector3(btScalar(0.0), btScalar(0.025), btScalar(0.0)));
+		//localB.getBasis().setEulerZYX(0,btScalar(M_PI_2),0); localB.setOrigin(btVector3(btScalar(0.0), btScalar(-0.25), btScalar(0.0)));
+		//hingeJoint =  new btHingeConstraint(*m_bodies[Creature::BODYPART_FOOT], *m_bodies[Creature::BODYPART_LOWER_LEG], localA, localB);
+		//hingeJoint->setLimit(btScalar(-M_PI_2), btScalar(M_PI_2));
+		//
+		//hingeJoint->enableAngularMotor(true,btScalar(0.0),btScalar(50.0)); //uncomment to allow for torque control
+		//
+		//m_joints[Creature::JOINT_ANKLE] = hingeJoint;
+		//hingeJoint->setDbgDrawSize(CONSTRAINT_DEBUG_SIZE);
+		//m_ownerWorld->addConstraint(m_joints[Creature::JOINT_ANKLE], true);
 
-		// KNEE
-		localA.setIdentity(); localB.setIdentity();
-		localA.getBasis().setEulerZYX(0,0,btScalar(M_PI_2)); localA.setOrigin(btVector3(btScalar(0.0), btScalar(0.25), btScalar(0.0)));
-		localB.getBasis().setEulerZYX(0,0,btScalar(M_PI_2)); localB.setOrigin(btVector3(btScalar(0.0), btScalar(-0.20), btScalar(0.0)));
-		hingeJoint = new btHingeConstraint(*m_bodies[Creature::BODYPART_LOWER_LEG], *m_bodies[Creature::BODYPART_UPPER_LEG], localA, localB);
-		hingeJoint->setLimit(btScalar(-M_PI_2), btScalar(M_PI_2));
+		//// KNEE
+		//localA.setIdentity(); localB.setIdentity();
+		//localA.getBasis().setEulerZYX(0,0,btScalar(M_PI_2)); localA.setOrigin(btVector3(btScalar(0.0), btScalar(0.25), btScalar(0.0)));
+		//localB.getBasis().setEulerZYX(0,0,btScalar(M_PI_2)); localB.setOrigin(btVector3(btScalar(0.0), btScalar(-0.20), btScalar(0.0)));
+		//hingeJoint = new btHingeConstraint(*m_bodies[Creature::BODYPART_LOWER_LEG], *m_bodies[Creature::BODYPART_UPPER_LEG], localA, localB);
+		//hingeJoint->setLimit(btScalar(-M_PI_2), btScalar(M_PI_2));
 
-		hingeJoint->enableAngularMotor(true,btScalar(0.0),btScalar(50.0)); //uncomment to allow for torque control
+		//hingeJoint->enableAngularMotor(true,btScalar(0.0),btScalar(50.0)); //uncomment to allow for torque control
 
-		m_joints[Creature::JOINT_KNEE] = hingeJoint;
-		hingeJoint->setDbgDrawSize(CONSTRAINT_DEBUG_SIZE);
-		m_ownerWorld->addConstraint(m_joints[JOINT_KNEE], true);
+		//m_joints[Creature::JOINT_KNEE] = hingeJoint;
+		//hingeJoint->setDbgDrawSize(CONSTRAINT_DEBUG_SIZE);
+		//m_ownerWorld->addConstraint(m_joints[JOINT_KNEE], true);
 
-		// Setup the PID controllers
+
+		// Setup the ball-socket joint constraints
+		// ===========================
+		btPoint2PointConstraint* balljoint;
+		btVector3 foot_lowerleg_joint = btVector3(0.0, 0.025, 0.0);
+		btVector3 lowerleg_foot_joint = btVector3(0.0, -0.25, 0.0);
+		btVector3 lowerleg_upperleg_joint = btVector3(0.0, 0.25, 0.0);
+		btVector3 upperleg_lowerleg_joint = btVector3(0.0, -0.20, 0.0);
+
+		balljoint = new btPoint2PointConstraint(*m_bodies[Creature::BODYPART_FOOT], *m_bodies[Creature::BODYPART_LOWER_LEG],
+			foot_lowerleg_joint, lowerleg_foot_joint);
+		m_joints[Creature::JOINT_ANKLE] = balljoint;
+		balljoint->setDbgDrawSize(CONSTRAINT_DEBUG_SIZE);
+		m_ownerWorld->addConstraint(m_joints[Creature::JOINT_ANKLE],true);
+
+		balljoint = new btPoint2PointConstraint(*m_bodies[Creature::BODYPART_LOWER_LEG], *m_bodies[Creature::BODYPART_UPPER_LEG],
+			lowerleg_upperleg_joint, upperleg_lowerleg_joint);
+		m_joints[Creature::JOINT_KNEE] = balljoint;
+		balljoint->setDbgDrawSize(CONSTRAINT_DEBUG_SIZE);
+		m_ownerWorld->addConstraint(m_joints[Creature::JOINT_KNEE],true);
+
+		// Setup the PID controllers (every bodypart has its own PID)
 		// =========================
 		PIDController* pidController;
 
-		// ANKLE
-		pidController = new PIDController(K_P_ANKLE, K_I_ANKLE, K_D_ANKLE);
-		m_PIDs[Creature::JOINT_ANKLE] = pidController;
-		
-		// KNEE
-		pidController = new PIDController(K_P_KNEE, K_I_KNEE, K_D_KNEE);
-		m_PIDs[Creature::JOINT_KNEE] = pidController;
+		// foot
+		pidController = new PIDController(7.0, 0.00, 7.0);
+		m_PIDs[Creature::BODYPART_FOOT] = pidController;
+
+		// lower_leg
+		pidController = new PIDController(40.0, 0.00, 40.0);
+		m_PIDs[Creature::BODYPART_LOWER_LEG] = pidController;
+
+		// upper_leg
+		pidController = new PIDController(35.0, 0.00, 35.0);
+		m_PIDs[Creature::BODYPART_UPPER_LEG] = pidController;
 }
 
 Creature::~Creature() { // Destructor
@@ -190,61 +231,23 @@ void Creature::update(int elapsedTime) {
 
 	if (elapsedTime - lastChange > m_time_step) { // Update balance control only every 10 ms
 		lastChange = elapsedTime;
-
-		//=================== TODO ===================//
-		// CSP := Centre of Support Polygon, for now use the COM of the foot, because the box is really thin
-		// Step 2: Describe the ground projected CSP in world coordinate system
-
-		btVector3 CSP, CSP_project, COM_project, up_vector(0.0f, 1.0f, 0.0f);
-		CSP = m_bodies[Creature::BODYPART_FOOT]->getCenterOfMassPosition();
-		// The ground-projected CSP
-		CSP_project = btVector3(CSP.x(), 0.0f, CSP.z());
-		// The ground-projected COM
-		COM_project = btVector3(m_positionCOM.x(), 0.0f, m_positionCOM.z());
-		
-		// ANKLE
-		// -----
-		btVector3 CSP_project_foot, COM_project_foot;
-		btTransform foot_system = m_bodies[Creature::BODYPART_FOOT]->getWorldTransform().inverse();
-		// Step 3.1: Describe the ground projected CSP in foot coordinate system
-		CSP_project_foot = foot_system * CSP_project;	// What for?
-		// Step 3.2: Describe the ground projected COM in foot coordinate system
-		COM_project_foot = foot_system * COM_project;	// What for?
-		// Step 3.3: Calculate the balance error solveable by an ankle rotation (inverted pendulum model)		
-		btVector3 errorVect = CSP_project - COM_project;
-
-#if defined BASIC_BALANCE		
-		if (abs(errorVect.norm()) > ACTION_BIAS)	// Put a threshould here
-		{
-			btVector3 error_foot = CSP_project_foot - COM_project_foot;
-
-			// Step 3.4: Feed the error to the PD controller and apply resulting 'torque' (here angular motor velocity)
-			// (Conversion between error to torque/motor velocity done by gains in PD controller)
-			btScalar torque_ankle = m_PIDs[Creature::JOINT_ANKLE]->solve(-1.0f*error_foot.z(), m_time_step);
-			//m_joints[Creature::JOINT_ANKLE]->setMotorTarget(torque_ankle, m_time_step);			// This one uses 
-			m_joints[Creature::JOINT_ANKLE]->setMotorTargetVelocity(torque_ankle / m_time_step);	// This one uses velocity
-
-			// KNEE
-			// ----
-			btVector3 CSP_project_leg, COM_project_leg;
-			btTransform leg_system = m_bodies[Creature::BODYPART_LOWER_LEG]->getWorldTransform().inverse();
-			// Step 4.1: Describe the ground projected CSP in lower leg coordinate system
-			CSP_project_leg = leg_system * CSP_project;
-			
-			// Step 4.2: Describe the ground projected COM in lower leg coordinate system
-			COM_project_leg = leg_system * COM_project;
-			
-			// Step 4.3: Calculate the balance error solveable by a knee rotation (inverted pendulum model)
-			btVector3 error_leg = CSP_project_leg - COM_project_leg;
-			
-			// Step 4.4: Feed the error to the PD controller and apply resulting 'torque' (here angular motor velocity)
-			// (Conversion between error to torque/motor velocity done by gains in PD controller)
-			btScalar torque_knee = m_PIDs[Creature::JOINT_KNEE]->solve(error_leg.x(), m_time_step);
-			//m_joints[Creature::JOINT_KNEE]->setMotorTarget(torque_knee, m_time_step);			
-			m_joints[Creature::JOINT_KNEE]->setMotorTargetVelocity(torque_knee / m_time_step);
+		//target orientation is vertical direction
+		btQuaternion targetOrientation = btQuaternion(0.0, 0.0, 0.0, 1.0);
+		// for each body part
+		for (int i = 0; i < 3; ++i) {
+			// set angular velocity to 0
+			m_bodies[i]->setAngularVelocity(btVector3(0.0,0.0,0.0));
+			// get oritentation of this body part
+			btQuaternion bodyOrientation = m_bodies[i]->getOrientation();
+			// get angle differartion
+			btQuaternion deltaOrientation = targetOrientation * bodyOrientation.inverse();
+			// compute euler angle
+			btVector3 deltaEuler = QuaternionToEulerXYZ(deltaOrientation);
+			// PID controller, but apply to vector.
+			btVector3 torque = m_PIDs[i]->solve(-deltaEuler, m_time_step);
+			// apply torque to body, instead of to joints
+			m_bodies[i]->applyTorque(-torque);
 		}
-		//===========================================//
-#endif
 	}
 }
 
@@ -276,4 +279,21 @@ btVector3 Creature::computeCenterOfMass() {
 	weightedCOM /= totalMass;
 
 	return weightedCOM;
+}
+
+btVector3 Creature::QuaternionToEulerXYZ(const btQuaternion &quat)
+{
+	btVector3 euler;
+	double w = quat.getW();   double x = quat.getX();   double y = quat.getY();   double z = quat.getZ();
+	double sqw = w*w; double sqx = x*x; double sqy = y*y; double sqz = z*z;
+	euler.setZ((atan2(2.0 * (x*y + z*w), (sqx - sqy - sqz + sqw))));
+	euler.setX((atan2(2.0 * (y*z + x*w), (-sqx - sqy + sqz + sqw))));
+	euler.setY((asin(-2.0 * (x*z - y*w))));
+	return euler;
+}
+btVector3 Creature::control(btVector3& in)
+{
+	// play around with the factor until you find a matching one
+	float Kp = 5.5;
+	return in * Kp;
 }

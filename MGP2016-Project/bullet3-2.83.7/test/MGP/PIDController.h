@@ -6,11 +6,12 @@ class PIDController
 {
 public:
 	// Constructor
-	PIDController(btScalar Kp, btScalar Ki, btScalar Kd)
-		: _Kp(Kp), _Ki(Ki), _Kd(Kd), _pre_err(0.0f), _integral(0.0f){}
+	PIDController(btScalar Kp, btScalar Ki, btScalar Kd);
 	// Destructor
 	~PIDController() {}
 	// Solve
+	//btScalar solve(btScalar error, btScalar &dt);
+	btVector3 solve(btVector3& error, btScalar &dt);
 	btScalar solve(btScalar error, btScalar &dt);
 
 private:
@@ -19,5 +20,7 @@ private:
 	btScalar _Kd;			// D-Derivative
 	btScalar _pre_err;		// Previous error
 	btScalar _integral;		// Current integral
+	btVector3 _Bintegral;	// Current integral for ball joint
+	btVector3 _Bpre_err;		// Previous error for ball joint
 };
 

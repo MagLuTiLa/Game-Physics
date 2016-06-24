@@ -19,6 +19,10 @@ public:
 
 	btVector3 getCOM() {return m_positionCOM;}	// Return the position of the COM
 
+	btVector3 QuaternionToEulerXYZ(const btQuaternion &quat);
+
+	btVector3 control(btVector3& in);
+
 protected:
 
 	enum {BODYPART_FOOT,BODYPART_LOWER_LEG,BODYPART_UPPER_LEG,BODYPART_COUNT}; // Body parts of the creature
@@ -28,7 +32,8 @@ protected:
 	btDynamicsWorld		*	m_ownerWorld;				// The physics world of the simulation
 	btCollisionShape	*	m_shapes[BODYPART_COUNT];	// The primitive shape of each body part used in collision
 	btRigidBody			*	m_bodies[BODYPART_COUNT];	// The array of body parts
-	btHingeConstraint	*	m_joints[JOINT_COUNT];		// The type of each joint constraint
+	//btHingeConstraint	*	m_joints[JOINT_COUNT];		// The type of each joint constraint
+	btPoint2PointConstraint	*	m_joints[JOINT_COUNT];
 
 	int lastChange;										// Time of last change of balance controller
 
@@ -41,7 +46,8 @@ protected:
 	btVector3 computeCenterOfMass();		// Compute the COM of the creature in world coordinate system
 
 	btScalar				m_time_step;
-	PIDController		*	m_PIDs[JOINT_COUNT];
+	//PIDController		*	m_PIDs[JOINT_COUNT];
+	PIDController		*	m_PIDs[BODYPART_COUNT];
 };
 
 #endif
