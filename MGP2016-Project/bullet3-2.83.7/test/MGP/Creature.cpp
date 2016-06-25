@@ -152,15 +152,15 @@ Creature::Creature (btDynamicsWorld* ownerWorld, const btVector3& positionOffset
 		PIDController* pidController;
 
 		// foot
-		pidController = new PIDController(7.0, 0.00, 7.0);
+		pidController = new PIDController(3.0, 0.00, 3.0);
 		m_PIDs[Creature::BODYPART_FOOT] = pidController;
 
 		// lower_leg
-		pidController = new PIDController(40.0, 0.00, 40.0);
+		pidController = new PIDController(160.0, 0.00, 160.0);
 		m_PIDs[Creature::BODYPART_LOWER_LEG] = pidController;
 
 		// upper_leg
-		pidController = new PIDController(35.0, 0.00, 35.0);
+		pidController = new PIDController(150.0, 0.00, 150.0);
 		m_PIDs[Creature::BODYPART_UPPER_LEG] = pidController;
 }
 
@@ -238,17 +238,18 @@ void Creature::update(int elapsedTime) {
 		// for each body part
 		for (int i = 0; i < 3; ++i) {
 			// set angular velocity to 0
-			m_bodies[i]->setAngularVelocity(btVector3(0.0,0.0,0.0));
+			//m_bodies[i]->setAngularVelocity(btVector3(0.0,0.0,0.0));
 			// get oritentation of this body part
 			btQuaternion bodyOrientation = m_bodies[i]->getOrientation();
 			// get angle differartion
 			btQuaternion deltaOrientation = targetOrientation * bodyOrientation.inverse();
 			// compute euler angle
 			btVector3 deltaEuler = QuaternionToEulerXYZ(deltaOrientation);
+			//deltaEuler = btVector3(0.0, 1.0, 0.0);
 			// PID controller, but apply to vector.
-			btVector3 torque = m_PIDs[i]->solve(-deltaEuler, m_time_step);
+			btVector3 torque = m_PIDs[i]->solve(deltaEuler, m_time_step);
 			// apply torque to body, instead of to joints
-			m_bodies[i]->applyTorque(-torque);
+			m_bodies[i]->applyTorque(torque);
 		}
 	}
 }
