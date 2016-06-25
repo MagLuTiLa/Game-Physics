@@ -77,13 +77,15 @@ Creature::Creature (btDynamicsWorld* ownerWorld, const btVector3& positionOffset
 		transform.setOrigin(btVector3(btScalar(0.0), btScalar(0.725), btScalar(0.0)));
 		m_bodies[Creature::BODYPART_UPPER_LEG] = m_ownerWorld->localCreateRigidBody(btScalar(3.0), offset*transform, m_shapes[Creature::BODYPART_UPPER_LEG]);
 
+		targetOrientation = m_bodies[Creature::BODYPART_FOOT]->getOrientation();
+
 		// Add damping to the rigid bodies
 		for (int i = 0; i < Creature::BODYPART_COUNT; ++i) {
 			m_bodies[i]->setDamping(btScalar(0.01), btScalar(0.01));
 			m_bodies[i]->setDeactivationTime(btScalar(0.01));
 			m_bodies[i]->setSleepingThresholds(btScalar(5.0), btScalar(5.0));
 		}
-		m_bodies[Creature::BODYPART_FOOT]->setDamping(btScalar(0.8), btScalar(0.01)); // Higher friction for foot
+		m_bodies[Creature::BODYPART_FOOT]->setDamping(btScalar(1.8), btScalar(0.01)); // Higher friction for foot
 
 	/*	btQuaternion bodyOrientation = m_bodies[Creature::BODYPART_LOWER_LEG]->getOrientation();
 		std::cout << bodyOrientation.x() << " " << bodyOrientation.y() << " "
@@ -232,7 +234,7 @@ void Creature::update(int elapsedTime) {
 	if (elapsedTime - lastChange > m_time_step) { // Update balance control only every 10 ms
 		lastChange = elapsedTime;
 		//target orientation is vertical direction
-		btQuaternion targetOrientation = btQuaternion(0.0, 0.0, 0.0, 1.0);
+		//btQuaternion targetOrientation = btQuaternion(0.0, 0.0, 0.0, 1.0);
 		// for each body part
 		for (int i = 0; i < 3; ++i) {
 			// set angular velocity to 0

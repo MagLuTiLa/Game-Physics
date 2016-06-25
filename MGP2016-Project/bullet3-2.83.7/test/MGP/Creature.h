@@ -48,6 +48,7 @@ protected:
 	btScalar				m_time_step;
 	//PIDController		*	m_PIDs[JOINT_COUNT];
 	PIDController		*	m_PIDs[BODYPART_COUNT];
+	btQuaternion		targetOrientation;
 };
 
 #endif
