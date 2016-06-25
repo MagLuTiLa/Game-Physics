@@ -35,6 +35,7 @@
     <ClCompile Include="..\..\test\MGP\Application.cpp" />
     <ClCompile Include="..\..\test\MGP\Creature.cpp" />
     <ClCompile Include="..\..\test\MGP\main.cpp" />
+    <ClCompile Include="..\..\test\MGP\PIDController.cpp" />
     <ClCompile Include="..\..\test\MGP\Scene.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -53,6 +54,7 @@
     <ClInclude Include="..\..\src\OpenGL\Win32DemoApplication.h" />
     <ClInclude Include="..\..\test\MGP\Application.h" />
     <ClInclude Include="..\..\test\MGP\Creature.h" />
+    <ClInclude Include="..\..\test\MGP\PIDController.h" />
     <ClInclude Include="..\..\test\MGP\Scene.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
