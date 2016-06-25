@@ -13,6 +13,14 @@ public:
 	//btScalar solve(btScalar error, btScalar &dt);
 	btVector3 solve(btVector3& error, btScalar &dt);
 	btScalar solve(btScalar error, btScalar &dt);
+	// set parameters
+	void set_Kp(btScalar kp);
+	void set_Ki(btScalar kp);
+	void set_Kd(btScalar kp);
+	// get parameters
+	btScalar get_Kp();
+	btScalar get_Ki();
+	btScalar get_Kd();
 
 private:
 	btScalar _Kp;			// P-Proportion

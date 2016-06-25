@@ -27,3 +27,10 @@ btVector3 PIDController::solve(btVector3& _error, btScalar &dt) {
 	_Bpre_err = _error;
 	return PID;
 }
+
+void PIDController::set_Kp(btScalar kp) {_Kp = kp;}
+void PIDController::set_Ki(btScalar ki) { _Ki = ki;}
+void PIDController::set_Kd(btScalar kd) { _Kd = kd;}
+btScalar PIDController::get_Kp() { return _Kp; }
+btScalar PIDController::get_Ki() { return _Ki; }
+btScalar PIDController::get_Kd() { return _Kd; }

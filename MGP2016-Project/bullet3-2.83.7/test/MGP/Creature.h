@@ -13,15 +13,13 @@ public:
 
 	virtual	~Creature();				// Destructor
 
-	void update(int elapsedTime);		// Update the creature state
+	void update(int elapsedTime, float ms);		// Update the creature state
 	bool hasFallen();					// Return if the creature has fallen down
 	void switchCOM();					// Activate / Deactivate the visualization of the COM
 
 	btVector3 getCOM() {return m_positionCOM;}	// Return the position of the COM
 
 	btVector3 QuaternionToEulerXYZ(const btQuaternion &quat);
-
-	btVector3 control(btVector3& in);
 
 protected:
 
@@ -43,12 +41,12 @@ protected:
 	btRigidBody			*	m_COM;			// Body COM
 	bool					m_showCOM;		// Show COM
 	btVector3				m_positionCOM;	// Position COM
-	btVector3 computeCenterOfMass();		// Compute the COM of the creature in world coordinate system
+	btVector3				computeCenterOfMass();		// Compute the COM of the creature in world coordinate system
 
 	btScalar				m_time_step;
-	//PIDController		*	m_PIDs[JOINT_COUNT];
 	PIDController		*	m_PIDs[BODYPART_COUNT];
-	btQuaternion		targetOrientation;
+	btQuaternion			targetOrientation;
+	bool					op_flag;
 };
 
 #endif

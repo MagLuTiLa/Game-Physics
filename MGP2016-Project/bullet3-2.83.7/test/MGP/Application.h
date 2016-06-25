@@ -33,7 +33,7 @@ protected:
 	virtual void keyboardCallback(unsigned char key, int x, int y); // Input management
 
 	void resetScene(const btVector3& startOffset);	// Reset the creature
-	void update();									// Update objects and display the time elapsed under balance
+	void update(float _time);									// Update objects and display the time elapsed under balance
 
 	Creature						*	m_creature;		// The creature
 	Scene							*	m_scene;		// The scene

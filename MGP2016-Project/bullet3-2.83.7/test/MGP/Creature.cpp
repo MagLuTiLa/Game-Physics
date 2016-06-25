@@ -45,7 +45,6 @@
 #endif
 
 Creature::Creature (btDynamicsWorld* ownerWorld, const btVector3& positionOffset) : m_ownerWorld (ownerWorld), m_hasFallen(false), lastChange(0), m_showCOM(false), m_time_step(10.0f) { // Constructor
-		
 		// Setup the rigid bodies
 		// ======================
 
@@ -87,46 +86,6 @@ Creature::Creature (btDynamicsWorld* ownerWorld, const btVector3& positionOffset
 		}
 		m_bodies[Creature::BODYPART_FOOT]->setDamping(btScalar(1.8), btScalar(0.01)); // Higher friction for foot
 
-	/*	btQuaternion bodyOrientation = m_bodies[Creature::BODYPART_LOWER_LEG]->getOrientation();
-		std::cout << bodyOrientation.x() << " " << bodyOrientation.y() << " "
-		<< bodyOrientation.z() << " " << bodyOrientation.w() << std::endl;
-		btVector3 ooo = QuaternionToEulerXYZ(bodyOrientation);
-		std::cout << ooo.x() << " " << ooo.y() << " " << ooo.z() << std::endl;*/
-
-		// Setup the hinge joint constraints
-		// ===========================
-
-		//btHingeConstraint* hingeJoint;
-		////FYI, another type of joint is for example: btConeTwistConstraint* coneJoint;
-		//btTransform localA, localB;
-		//
-		//// ANKLE
-		//localA.setIdentity(); localB.setIdentity();
-		//localA.getBasis().setEulerZYX(0,btScalar(M_PI_2),0); localA.setOrigin(btVector3(btScalar(0.0), btScalar(0.025), btScalar(0.0)));
-		//localB.getBasis().setEulerZYX(0,btScalar(M_PI_2),0); localB.setOrigin(btVector3(btScalar(0.0), btScalar(-0.25), btScalar(0.0)));
-		//hingeJoint =  new btHingeConstraint(*m_bodies[Creature::BODYPART_FOOT], *m_bodies[Creature::BODYPART_LOWER_LEG], localA, localB);
-		//hingeJoint->setLimit(btScalar(-M_PI_2), btScalar(M_PI_2));
-		//
-		//hingeJoint->enableAngularMotor(true,btScalar(0.0),btScalar(50.0)); //uncomment to allow for torque control
-		//
-		//m_joints[Creature::JOINT_ANKLE] = hingeJoint;
-		//hingeJoint->setDbgDrawSize(CONSTRAINT_DEBUG_SIZE);
-		//m_ownerWorld->addConstraint(m_joints[Creature::JOINT_ANKLE], true);
-
-		//// KNEE
-		//localA.setIdentity(); localB.setIdentity();
-		//localA.getBasis().setEulerZYX(0,0,btScalar(M_PI_2)); localA.setOrigin(btVector3(btScalar(0.0), btScalar(0.25), btScalar(0.0)));
-		//localB.getBasis().setEulerZYX(0,0,btScalar(M_PI_2)); localB.setOrigin(btVector3(btScalar(0.0), btScalar(-0.20), btScalar(0.0)));
-		//hingeJoint = new btHingeConstraint(*m_bodies[Creature::BODYPART_LOWER_LEG], *m_bodies[Creature::BODYPART_UPPER_LEG], localA, localB);
-		//hingeJoint->setLimit(btScalar(-M_PI_2), btScalar(M_PI_2));
-
-		//hingeJoint->enableAngularMotor(true,btScalar(0.0),btScalar(50.0)); //uncomment to allow for torque control
-
-		//m_joints[Creature::JOINT_KNEE] = hingeJoint;
-		//hingeJoint->setDbgDrawSize(CONSTRAINT_DEBUG_SIZE);
-		//m_ownerWorld->addConstraint(m_joints[JOINT_KNEE], true);
-
-
 		// Setup the ball-socket joint constraints
 		// ===========================
 		btPoint2PointConstraint* balljoint;
@@ -152,16 +111,18 @@ Creature::Creature (btDynamicsWorld* ownerWorld, const btVector3& positionOffset
 		PIDController* pidController;
 
 		// foot
-		pidController = new PIDController(3.0, 0.00, 3.0);
+		pidController = new PIDController(8.0f, 0.0f, 8.0f);
 		m_PIDs[Creature::BODYPART_FOOT] = pidController;
 
 		// lower_leg
-		pidController = new PIDController(160.0, 0.00, 160.0);
+		pidController = new PIDController(45.0, 0.0f, 45.0f);
 		m_PIDs[Creature::BODYPART_LOWER_LEG] = pidController;
 
 		// upper_leg
-		pidController = new PIDController(150.0, 0.00, 150.0);
+		pidController = new PIDController(39.0f, 0.0f, 39.0f);
 		m_PIDs[Creature::BODYPART_UPPER_LEG] = pidController;
+
+		op_flag = true;
 }
 
 Creature::~Creature() { // Destructor
@@ -207,8 +168,16 @@ void Creature::switchCOM() {
 	}	
 }
 
-void Creature::update(int elapsedTime) {
-	
+void Creature::update(int elapsedTime, float ms) {
+	float op = 16500.0f / ms;
+	if (op_flag) {
+		for (int i = 0; i < 3; ++i) {
+			m_PIDs[i]->set_Kp(op * m_PIDs[i]->get_Kp());
+			m_PIDs[i]->set_Ki(op * m_PIDs[i]->get_Ki());
+			m_PIDs[i]->set_Kd(op * m_PIDs[i]->get_Kd());
+		}
+		op_flag = false;
+	}
 	// BALANCE CONTROLLER
 	// ==================
 
@@ -224,42 +193,37 @@ void Creature::update(int elapsedTime) {
 
 	// Step 1.2: Update pose only if creature did not fall
 	if (m_hasFallen) {
-		if (((btHingeConstraint*)m_joints[Creature::JOINT_ANKLE])->getEnableAngularMotor()) { // ragdoll is fallen
-			((btHingeConstraint*)m_joints[Creature::JOINT_ANKLE])->enableMotor(false);
-			((btHingeConstraint*)m_joints[Creature::JOINT_KNEE])->enableMotor(false);
-		}
 		return;
 	}			
 
 	if (elapsedTime - lastChange > m_time_step) { // Update balance control only every 10 ms
-		lastChange = elapsedTime;
 		//target orientation is vertical direction
-		//btQuaternion targetOrientation = btQuaternion(0.0, 0.0, 0.0, 1.0);
 		// for each body part
 		for (int i = 0; i < 3; ++i) {
 			// set angular velocity to 0
-			//m_bodies[i]->setAngularVelocity(btVector3(0.0,0.0,0.0));
+			m_bodies[i]->setAngularVelocity(btVector3(0.0,0.0,0.0));
 			// get oritentation of this body part
 			btQuaternion bodyOrientation = m_bodies[i]->getOrientation();
 			// get angle differartion
 			btQuaternion deltaOrientation = targetOrientation * bodyOrientation.inverse();
 			// compute euler angle
 			btVector3 deltaEuler = QuaternionToEulerXYZ(deltaOrientation);
-			//deltaEuler = btVector3(0.0, 1.0, 0.0);
 			// PID controller, but apply to vector.
+			//btVector3 torque = control(deltaEuler);
 			btVector3 torque = m_PIDs[i]->solve(deltaEuler, m_time_step);
 			// apply torque to body, instead of to joints
 			m_bodies[i]->applyTorque(torque);
 		}
+		lastChange = elapsedTime;
 	}
 }
 
 bool Creature::hasFallen() {
 	if (m_hasFallen) return m_hasFallen; // true if already down (cannot get back up here)
 	if (m_bodies[BODYPART_LOWER_LEG]->getActivationState() == ISLAND_SLEEPING) m_hasFallen = true; // true if enters in sleeping mode
-	if (m_bodies[BODYPART_LOWER_LEG]->getCenterOfMassPosition().getY() < 0.15 ||
-		m_bodies[BODYPART_UPPER_LEG]->getCenterOfMassPosition().getY() < 0.15 ||
-		m_bodies[BODYPART_FOOT]->getCenterOfMassPosition().getY() < 0.15) m_hasFallen = true; // true if a creature has fallen from platform
+	if (m_bodies[BODYPART_LOWER_LEG]->getCenterOfMassPosition().getY() < 0.20 ||
+		m_bodies[BODYPART_UPPER_LEG]->getCenterOfMassPosition().getY() < 0.20 ||
+		m_bodies[BODYPART_FOOT]->getCenterOfMassPosition().getY() < 0.20) m_hasFallen = true; // true if a creature has fallen from platform
 	if (m_bodies[BODYPART_LOWER_LEG]->getCenterOfMassPosition().getY() > m_bodies[BODYPART_UPPER_LEG]->getCenterOfMassPosition().getY()) m_hasFallen = true; // true if align with ground
 	if (m_bodies[BODYPART_FOOT]->getCenterOfMassPosition().getY() > m_bodies[BODYPART_LOWER_LEG]->getCenterOfMassPosition().getY()) m_hasFallen = true; // true if align with ground
 	return m_hasFallen;
@@ -287,16 +251,16 @@ btVector3 Creature::computeCenterOfMass() {
 btVector3 Creature::QuaternionToEulerXYZ(const btQuaternion &quat)
 {
 	btVector3 euler;
-	double w = quat.getW();   double x = quat.getX();   double y = quat.getY();   double z = quat.getZ();
-	double sqw = w*w; double sqx = x*x; double sqy = y*y; double sqz = z*z;
+	double w = quat.getW();  
+	double x = quat.getX();  
+	double y = quat.getY(); 
+	double z = quat.getZ();
+	double sqw = w*w; 
+	double sqx = x*x; 
+	double sqy = y*y;
+	double sqz = z*z;
 	euler.setZ((atan2(2.0 * (x*y + z*w), (sqx - sqy - sqz + sqw))));
 	euler.setX((atan2(2.0 * (y*z + x*w), (-sqx - sqy + sqz + sqw))));
 	euler.setY((asin(-2.0 * (x*z - y*w))));
 	return euler;
-}
-btVector3 Creature::control(btVector3& in)
-{
-	// play around with the factor until you find a matching one
-	float Kp = 5.5;
-	return in * Kp;
 }

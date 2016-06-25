@@ -58,9 +58,9 @@ void Application::clientMoveAndDisplay() {
 
 	// Update the simulator
 	// ====================
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	float ms = getDeltaTimeMicroseconds();
-	float minFPS = 1000000.f/60.f;
+	float minFPS = 1000000.f / 60.f;
 	if (ms > minFPS) ms = minFPS;
 	if (m_dynamicsWorld) {
 		m_dynamicsWorld->stepSimulation(ms / 1000000.f);
@@ -69,8 +69,7 @@ void Application::clientMoveAndDisplay() {
 
 	// Update the Scene
 	// ================
-	update();
-
+	update(ms);
 	// Render the simulation
 	// =====================
 	renderme(); 
@@ -150,7 +149,7 @@ void Application::exitPhysics() {
 	
 }
 
-void Application::update() {	
+void Application::update(float ms) {	
 
 	// Do not update time if creature fallen
 	if (!m_creature->hasFallen()) m_currentTime = GetTickCount();
@@ -160,7 +159,7 @@ void Application::update() {
 	m_scene->update( (!m_creature->hasFallen()) ? m_elapsedTime : -1, m_creature->getCOM());
 
 	// Control the creature movements
-	m_creature->update((int)(m_currentTime - m_startTime));
+	m_creature->update((int)(m_currentTime - m_startTime), ms);
 
 	// Display info
 	DemoApplication::displayProfileString(10,20,"Q=quit E=reset R=platform T=ball Y=COM U=switch I=pause");
