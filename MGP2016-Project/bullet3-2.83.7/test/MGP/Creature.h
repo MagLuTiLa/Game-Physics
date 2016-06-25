@@ -4,6 +4,17 @@
 
 #include "btBulletDynamicsCommon.h"
 
+// Switch Modes, modify to extend modes
+#if 0		
+#define BASIC_BALANCE		// Basic balancing mode
+#elif 1		
+#define EXTRA_LIMB			// Balancing mode with extra limb
+#elif 0		
+#define ADV_BALANCE			// Advanced balancing mode
+#elif 0		
+#define POS_DEPEND			// The pose-dependent balancing mode
+#endif
+
 class PIDController;
 
 class Creature {
@@ -20,10 +31,14 @@ public:
 	btVector3 getCOM() {return m_positionCOM;}	// Return the position of the COM
 
 protected:
-
+#if defined BASIC_BALANCE
 	enum {BODYPART_FOOT,BODYPART_LOWER_LEG,BODYPART_UPPER_LEG,BODYPART_COUNT}; // Body parts of the creature
-
 	enum {JOINT_ANKLE,JOINT_KNEE,JOINT_COUNT}; // Joints of the creature
+
+#elif defined EXTRA_LIMB
+	enum { BODYPART_FOOT, BODYPART_LOWER_LEG, BODYPART_UPPER_LEG, BODYPART_TORSO, BODYPART_COUNT }; // Body parts of the creature
+	enum { JOINT_ANKLE, JOINT_KNEE, JOINT_HIP, JOINT_COUNT }; // Joints of the creature
+#endif
 
 	btDynamicsWorld		*	m_ownerWorld;				// The physics world of the simulation
 	btCollisionShape	*	m_shapes[BODYPART_COUNT];	// The primitive shape of each body part used in collision
