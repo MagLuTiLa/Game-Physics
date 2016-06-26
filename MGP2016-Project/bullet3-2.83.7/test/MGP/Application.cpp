@@ -78,11 +78,13 @@ void Application::Init_Torus()
 	psb->generateBendingConstraints(2);
 	psb->m_cfg.piterations = 2;
 	psb->randomizeConstraints();
+	psb->getCollisionShape()->setColor(btVector3(btScalar(1), btScalar(0), btScalar(0)));
+	psb->setCollisionFlags(psb->getCollisionFlags() & ~btSoftBody::CollisionFlags::CF_DISABLE_VISUALIZE_OBJECT);
 	btMatrix3x3	m;
-	m.setEulerZYX(SIMD_PI / 2, 0, 0);
-	psb->transform(btTransform(m, btVector3(0, 4, 0)));
-	psb->scale(btVector3(2, 2, 2));
-	psb->setTotalMass(50, true);
+	m.setEulerZYX(0, 0, 0);
+	psb->transform(btTransform(m, btVector3(0, 10, 0)));
+	psb->scale(btVector3(.25, .25, .25));
+	psb->setTotalMass(15, true);
 	((btSoftRigidDynamicsWorld*)m_dynamicsWorld)->addSoftBody(psb);
 
 }

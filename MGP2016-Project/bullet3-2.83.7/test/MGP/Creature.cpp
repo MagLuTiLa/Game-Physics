@@ -30,7 +30,7 @@ Creature::Creature (btDynamicsWorld* ownerWorld, const btVector3& positionOffset
 		btTransform offset; offset.setIdentity();
 		offset.setOrigin(positionOffset); // absolute initial starting position
 		btTransform transform;
-
+		
 		// FOOT
 		transform.setIdentity();
 		transform.setOrigin(btVector3(btScalar(0.0), btScalar(0.0), btScalar(0.0)));

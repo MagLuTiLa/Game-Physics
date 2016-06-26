@@ -17,6 +17,7 @@ subject to the following restrictions:
 
 class btCollisionShape;
 class btShapeHull;
+class btSoftBody;
 #include "LinearMath/btAlignedObjectArray.h"
 #include "LinearMath/btVector3.h"
 
@@ -58,6 +59,7 @@ public:
 		}
 		
 		static void		drawCylinder(float radius,float halfHeight, int upAxis);
+		void			drawSoftBody(btSoftBody * body);
 		void			drawSphere(btScalar r, int lats, int longs);
 		static void		drawCoordSystem();
 		
