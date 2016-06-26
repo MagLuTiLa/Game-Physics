@@ -703,3 +703,8 @@ btVector3 Creature::QuaternionToEulerXYZ(const btQuaternion &quat)
 	euler.setY(float((asin(-2.0f * (x*z - y*w)))));
 	return euler;
 }
+
+double Creature::fitnessFunction() 
+{
+	return 0.0;
+}
