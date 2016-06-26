@@ -63,7 +63,7 @@ void Application::clientMoveAndDisplay() {
 	float minFPS = 1000000.f / 60.f;
 	if (ms > minFPS) ms = minFPS;
 	if (m_dynamicsWorld) {
-		m_dynamicsWorld->stepSimulation(ms / 1000000.f);
+		m_dynamicsWorld->stepSimulation(ms / 1000000.f, 2, 1.0f/60.0f);
 		m_dynamicsWorld->debugDrawWorld();
 	}
 

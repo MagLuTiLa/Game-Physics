@@ -115,7 +115,7 @@ Creature::Creature (btDynamicsWorld* ownerWorld, const btVector3& positionOffset
 		m_PIDs[Creature::BODYPART_FOOT] = pidController;
 
 		// lower_leg
-		pidController = new PIDController(45.0, 0.0f, 45.0f);
+		pidController = new PIDController(35.0, 0.0f, 45.0f);
 		m_PIDs[Creature::BODYPART_LOWER_LEG] = pidController;
 
 		// upper_leg
@@ -169,13 +169,21 @@ void Creature::switchCOM() {
 }
 
 void Creature::update(int elapsedTime, float ms) {
-	float op = 16500.0f / ms;
-	if (op_flag) {
-		for (int i = 0; i < 3; ++i) {
-			m_PIDs[i]->set_Kp(op * m_PIDs[i]->get_Kp());
-			m_PIDs[i]->set_Ki(op * m_PIDs[i]->get_Ki());
-			m_PIDs[i]->set_Kd(op * m_PIDs[i]->get_Kd());
-		}
+	// different computer has different properties...so...
+	if (op_flag && ms > 2000 && ms < 3000) {
+		// foot
+		PIDController* pidController;
+		pidController = new PIDController(50.0f, 0.0f, 50.0f);
+		m_PIDs[Creature::BODYPART_FOOT] = pidController;
+
+		// lower_leg
+		pidController = new PIDController(80.0, 0.03f, 80.0f);
+		m_PIDs[Creature::BODYPART_LOWER_LEG] = pidController;
+
+		// upper_leg
+		pidController = new PIDController(80.0f, 0.05f, 80.0f);
+		m_PIDs[Creature::BODYPART_UPPER_LEG] = pidController;
+
 		op_flag = false;
 	}
 	// BALANCE CONTROLLER
@@ -208,11 +216,14 @@ void Creature::update(int elapsedTime, float ms) {
 			btQuaternion deltaOrientation = targetOrientation * bodyOrientation.inverse();
 			// compute euler angle
 			btVector3 deltaEuler = QuaternionToEulerXYZ(deltaOrientation);
-			// PID controller, but apply to vector.
-			//btVector3 torque = control(deltaEuler);
-			btVector3 torque = m_PIDs[i]->solve(deltaEuler, m_time_step);
-			// apply torque to body, instead of to joints
-			m_bodies[i]->applyTorque(torque);
+			if (deltaEuler.norm() > 0.01) {
+				// PID controller, but apply to vector.
+				//btVector3 torque = control(deltaEuler);
+				btVector3 torque = m_PIDs[i]->solve(deltaEuler, m_time_step);
+				// apply torque impulse to body, instead of to joints
+				m_bodies[i]->applyTorqueImpulse(torque*ms/100000.0);
+				//m_bodies[i]->applyTorque(torque);
+			}
 		}
 		lastChange = elapsedTime;
 	}
