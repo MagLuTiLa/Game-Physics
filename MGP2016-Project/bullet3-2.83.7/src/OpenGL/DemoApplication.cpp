@@ -18,6 +18,8 @@ subject to the following restrictions:
 #include "LinearMath/btIDebugDraw.h"
 
 #include "BulletSoftBody/btSoftBody.h"
+#include "BulletSoftBody/btSoftRigidDynamicsWorld.h"
+#include "BulletSoftBody/btSoftBodyHelpers.h"
 #include "BulletDynamics/Dynamics/btDynamicsWorld.h"
 
 #include "BulletDynamics/ConstraintSolver/btPoint2PointConstraint.h"//picking
@@ -854,7 +856,9 @@ void DemoApplication::renderscene(int pass) {
 		{
 			if (pass == 0)
 			{
-				m_shapeDrawer->drawSoftBody(softBody);
+				btSoftBodyHelpers::DrawFrame(softBody, m_dynamicsWorld->getDebugDrawer());
+				btSoftBodyHelpers::Draw(softBody, m_dynamicsWorld->getDebugDrawer(), ((btSoftRigidDynamicsWorld*)m_dynamicsWorld)->getDrawFlags());
+				//m_shapeDrawer->drawSoftBody(softBody);
 			}
 			continue;
 		}
