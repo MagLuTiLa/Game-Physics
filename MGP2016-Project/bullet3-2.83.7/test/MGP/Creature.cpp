@@ -42,7 +42,7 @@
 	#define K_I_FOOT	0.0f
 	#define K_D_FOOT	8.0f
 
-	#define K_P_L_LEG	35.0f
+	#define K_P_L_LEG	45.0f
 	#define K_I_L_LEG	0.0f
 	#define K_D_L_LEG	45.0f
 
@@ -640,7 +640,9 @@ void Creature::update(int elapsedTime, float ms)
 				//btVector3 torque = control(deltaEuler);
 				btVector3 torque = m_PIDs[i]->solve(deltaEuler, m_time_step);
 				// apply torque impulse to body, instead of to joints
-				m_bodies[i]->applyTorqueImpulse(torque*ms / 100000.0);
+				if(!op_flag)
+					m_bodies[i]->applyTorqueImpulse(torque*ms * 0.00001);
+				else m_bodies[i]->applyTorqueImpulse(torque*ms * 0.000001);
 				//m_bodies[i]->applyTorque(torque);
 			}
 		}
