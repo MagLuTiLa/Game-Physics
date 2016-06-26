@@ -62,14 +62,30 @@ void Application::clientMoveAndDisplay() {
 	float ms = getDeltaTimeMicroseconds();
 	float minFPS = 1000000.f/60.f;
 	if (ms > minFPS) ms = minFPS;
-	if (m_dynamicsWorld) {
+	if (m_dynamicsWorld) {	// Here we force the frame rate to 60pfs in advanced balance mode
+#if defined BASIC_BALANCE
 		m_dynamicsWorld->stepSimulation(ms / 1000000.f);
+#elif defined EXTRA_LIMB
+		m_dynamicsWorld->stepSimulation(ms / 1000000.f);
+#elif defined ADV_BALANCE
+		m_dynamicsWorld->stepSimulation(ms / 1000000.f, 2, 1.0f / 60.0f);
+#elif defined POS_DEPEND
+		m_dynamicsWorld->stepSimulation(ms / 1000000.f);
+#endif
 		m_dynamicsWorld->debugDrawWorld();
 	}
 
 	// Update the Scene
 	// ================
+#if defined BASIC_BALANCE
 	update();
+#elif defined EXTRA_LIMB
+	update();
+#elif defined ADV_BALANCE
+	update(ms);
+#elif defined POS_DEPEND
+	update();
+#endif
 
 	// Render the simulation
 	// =====================
@@ -175,5 +191,34 @@ void Application::update() {
 	else
 		oss << "Time under balance: " << s_elapsedTime.substr(0,s_elapsedTime.size()-1) << "." << s_elapsedTime.substr(s_elapsedTime.size()-1,s_elapsedTime.size()) << " seconds";
 	DemoApplication::displayProfileString(10,40,const_cast<char*>(oss.str().c_str()));	
+
+}
+
+void Application::update(float ms) {
+
+	// Do not update time if creature fallen
+	if (!m_creature->hasFallen()) m_currentTime = GetTickCount();
+	m_elapsedTime = (int)(((double)m_currentTime - m_startTime) / 100.0);
+
+	// Move the platform if not fallen
+	m_scene->update((!m_creature->hasFallen()) ? m_elapsedTime : -1, m_creature->getCOM());
+
+#if defined ADV_BALANCE
+	// Control the creature movements
+	m_creature->update((int)(m_currentTime - m_startTime), ms);
+#endif
+	// Display info
+	DemoApplication::displayProfileString(10, 20, "Q=quit E=reset R=platform T=ball Y=COM U=switch I=pause");
+
+	// Display time elapsed
+	std::ostringstream osstmp;
+	osstmp << m_elapsedTime;
+	std::string s_elapsedTime = osstmp.str();
+	std::ostringstream oss;
+	if (m_elapsedTime < 10)
+		oss << "Time under balance: 0." << s_elapsedTime << " seconds";
+	else
+		oss << "Time under balance: " << s_elapsedTime.substr(0, s_elapsedTime.size() - 1) << "." << s_elapsedTime.substr(s_elapsedTime.size() - 1, s_elapsedTime.size()) << " seconds";
+	DemoApplication::displayProfileString(10, 40, const_cast<char*>(oss.str().c_str()));
 
 }
