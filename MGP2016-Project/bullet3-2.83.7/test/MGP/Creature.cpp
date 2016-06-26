@@ -37,11 +37,24 @@
 	#define K_I_HIP		0.0f
 	#define K_D_HIP		50.0f
 
+#elif defined ADV_BALANCE
+	#define K_P_FOOT	8.0f
+	#define K_I_FOOT	0.0f
+	#define K_D_FOOT	8.0f
+
+	#define K_P_L_LEG	35.0f
+	#define K_I_L_LEG	0.0f
+	#define K_D_L_LEG	45.0f
+
+	#define K_P_U_LEG	39.0f
+	#define K_I_U_LEG	0.0f
+	#define K_D_U_LEG	39.0f
+
 #endif
 
 // Mode swtichtes are moved to header, CREATURE_H_
 
-// Leg geometry properties
+// Leg geometry properties, including capsule radius, height, box extents, and mass of objects
 #if defined BASIC_BALANCE
 	#define FOOT_W 0.100		// Width of the foot box
 	#define FOOT_L 0.120		// Length of the foot box 
@@ -70,6 +83,19 @@
 	#define TORSO_R 0.05		// Radius of torso
 	#define TORSO_H 0.30		// Height of torso
 	#define TORSO_M 1.0			// Mass of torso
+
+#elif defined ADV_BALANCE
+	#define FOOT_W 0.100		// Width of the foot box
+	#define FOOT_L 0.120		// Length of the foot box 
+	#define FOOT_H 0.025		// Height of the foot box
+	#define FOOT_M 5.0			// Mass of FOOT
+	#define FOOT_DAMP 1.00		// Friction of FOOT
+	#define LOW_LEG_R 0.05		// Radius of lower leg
+	#define LOW_LEG_H 0.50		// Height of lower leg
+	#define LOW_LEG_M 3.0		// Mass of lower leg
+	#define UP_LEG_R 0.05		// Radius of upper leg
+	#define UP_LEG_H 0.40		// Height of upper leg
+	#define UP_LEG_M 3.0		// Mass of upper leg
 
 #endif
 
@@ -265,6 +291,84 @@ Creature::Creature (btDynamicsWorld* ownerWorld, const btVector3& positionOffset
 	pidController = new PIDController(K_P_HIP, K_I_HIP, K_D_HIP);
 	m_PIDs[Creature::JOINT_HIP] = pidController;
 
+#elif defined ADV_BALANCE
+	// Setup the rigid bodies
+	// ======================
+
+	// Setup the collision shapes
+	m_shapes[Creature::BODYPART_FOOT] = new btBoxShape(btVector3(btScalar(FOOT_W), btScalar(FOOT_H), btScalar(FOOT_L)));
+	m_shapes[Creature::BODYPART_FOOT]->setColor(btVector3(btScalar(0.6), btScalar(0.6), btScalar(0.6)));
+	m_shapes[Creature::BODYPART_LOWER_LEG] = new btCapsuleShape(btScalar(LOW_LEG_R), btScalar(LOW_LEG_H));
+	m_shapes[Creature::BODYPART_LOWER_LEG]->setColor(btVector3(btScalar(0.6), btScalar(0.6), btScalar(0.6)));
+	m_shapes[Creature::BODYPART_UPPER_LEG] = new btCapsuleShape(btScalar(UP_LEG_R), btScalar(UP_LEG_H));
+	m_shapes[Creature::BODYPART_UPPER_LEG]->setColor(btVector3(btScalar(0.6), btScalar(0.6), btScalar(0.6)));
+
+	// Setup the body properties
+	btTransform offset; offset.setIdentity();
+	offset.setOrigin(positionOffset); // absolute initial starting position
+	btTransform transform;
+
+	// FOOT
+	transform.setIdentity();
+	transform.setOrigin(btVector3(btScalar(0.0), btScalar(0.0), btScalar(0.0)));
+	m_bodies[Creature::BODYPART_FOOT] = m_ownerWorld->localCreateRigidBody(btScalar(FOOT_M), offset*transform, m_shapes[Creature::BODYPART_FOOT]);
+
+	// LOWER_LEG
+	transform.setIdentity();
+	transform.setOrigin(btVector3(btScalar(0.0), btScalar(0.275), btScalar(0.0)));
+	m_bodies[Creature::BODYPART_LOWER_LEG] = m_ownerWorld->localCreateRigidBody(btScalar(LOW_LEG_M), offset*transform, m_shapes[Creature::BODYPART_LOWER_LEG]);
+
+	// UPPER_LEG
+	transform.setIdentity();
+	transform.setOrigin(btVector3(btScalar(0.0), btScalar(0.725), btScalar(0.0)));
+	m_bodies[Creature::BODYPART_UPPER_LEG] = m_ownerWorld->localCreateRigidBody(btScalar(UP_LEG_M), offset*transform, m_shapes[Creature::BODYPART_UPPER_LEG]);
+
+	targetOrientation = m_bodies[Creature::BODYPART_FOOT]->getOrientation();
+
+	// Add damping to the rigid bodies
+	for (int i = 0; i < Creature::BODYPART_COUNT; ++i) {
+		m_bodies[i]->setDamping(btScalar(0.01), btScalar(0.01));
+		m_bodies[i]->setDeactivationTime(btScalar(0.01));
+		m_bodies[i]->setSleepingThresholds(btScalar(5.0), btScalar(5.0));
+	}
+	m_bodies[Creature::BODYPART_FOOT]->setDamping(btScalar(FOOT_DAMP), btScalar(0.01)); // Higher friction for foot
+	// Setup the ball-socket joint constraints
+	// ===========================
+	btPoint2PointConstraint* balljoint;
+	btVector3 foot_lowerleg_joint = btVector3(0.0, 0.025, 0.0);
+	btVector3 lowerleg_foot_joint = btVector3(0.0, -0.25, 0.0);
+	btVector3 lowerleg_upperleg_joint = btVector3(0.0, 0.25, 0.0);
+	btVector3 upperleg_lowerleg_joint = btVector3(0.0, -0.20, 0.0);
+
+	balljoint = new btPoint2PointConstraint(*m_bodies[Creature::BODYPART_FOOT], *m_bodies[Creature::BODYPART_LOWER_LEG],
+											foot_lowerleg_joint, lowerleg_foot_joint);
+	m_joints[Creature::JOINT_ANKLE] = balljoint;
+	balljoint->setDbgDrawSize(CONSTRAINT_DEBUG_SIZE);
+	m_ownerWorld->addConstraint(m_joints[Creature::JOINT_ANKLE], true);
+
+	balljoint = new btPoint2PointConstraint(*m_bodies[Creature::BODYPART_LOWER_LEG], *m_bodies[Creature::BODYPART_UPPER_LEG],
+											lowerleg_upperleg_joint, upperleg_lowerleg_joint);
+	m_joints[Creature::JOINT_KNEE] = balljoint;
+	balljoint->setDbgDrawSize(CONSTRAINT_DEBUG_SIZE);
+	m_ownerWorld->addConstraint(m_joints[Creature::JOINT_KNEE], true);
+
+	// Setup the PID controllers (every bodypart has its own PID)
+	// =========================
+	PIDController* pidController;
+
+	// foot
+	pidController = new PIDController(K_P_FOOT, K_I_FOOT, K_D_FOOT);
+	m_PIDs[Creature::BODYPART_FOOT] = pidController;					
+																		
+	// lower_leg
+	pidController = new PIDController(K_P_L_LEG, K_I_L_LEG, K_D_L_LEG);
+	m_PIDs[Creature::BODYPART_LOWER_LEG] = pidController;				
+																		
+	// upper_leg
+	pidController = new PIDController(K_P_U_LEG, K_I_U_LEG, K_D_U_LEG);
+	m_PIDs[Creature::BODYPART_UPPER_LEG] = pidController;				
+																		
+	op_flag = true;
 #endif
 }
 
@@ -476,6 +580,75 @@ void Creature::update(int elapsedTime) {
 #endif
 }
 
+#if defined ADV_BALANCE
+void Creature::update(int elapsedTime, float ms)
+{
+	// different computer has different properties, this method is used to better sync timestep
+	if (op_flag && ms > 2000 && ms < 3000)
+	{
+		// foot
+		PIDController* pidController;
+		pidController = new PIDController(50.0f, 0.0f, 50.0f);
+		m_PIDs[Creature::BODYPART_FOOT] = pidController;
+
+		// lower_leg
+		pidController = new PIDController(80.0, 0.03f, 80.0f);
+		m_PIDs[Creature::BODYPART_LOWER_LEG] = pidController;
+
+		// upper_leg
+		pidController = new PIDController(80.0f, 0.05f, 80.0f);
+		m_PIDs[Creature::BODYPART_UPPER_LEG] = pidController;
+
+		op_flag = false;
+	}
+	// BALANCE CONTROLLER
+	// ==================
+
+	// Step 1.1: Compute the COM in world coordinate system
+	btVector3 comInWorld = computeCenterOfMass();
+	m_positionCOM = comInWorld;
+	if (m_showCOM)
+	{ // Visualize COM
+		btTransform transform;
+		m_COM->getMotionState()->getWorldTransform(transform);
+		transform.setOrigin(comInWorld);
+		m_COM->getMotionState()->setWorldTransform(transform);
+	}
+
+	// Step 1.2: Update pose only if creature did not fall
+	if (m_hasFallen)
+	{
+		return;
+	}
+
+	if (elapsedTime - lastChange > m_time_step)
+	{	// Update balance control only every 10 ms
+		//target orientation is vertical direction for each body part
+		for (int i = 0; i < 3; ++i)
+		{
+			// set angular velocity to 0
+			m_bodies[i]->setAngularVelocity(btVector3(0.0, 0.0, 0.0));
+			// get oritentation of this body part
+			btQuaternion bodyOrientation = m_bodies[i]->getOrientation();
+			// get angle differartion
+			btQuaternion deltaOrientation = targetOrientation * bodyOrientation.inverse();
+			// compute euler angle
+			btVector3 deltaEuler = QuaternionToEulerXYZ(deltaOrientation);
+			if (deltaEuler.norm() > 0.01)
+			{
+				// PID controller, but apply to vector.
+				//btVector3 torque = control(deltaEuler);
+				btVector3 torque = m_PIDs[i]->solve(deltaEuler, m_time_step);
+				// apply torque impulse to body, instead of to joints
+				m_bodies[i]->applyTorqueImpulse(torque*ms / 100000.0);
+				//m_bodies[i]->applyTorque(torque);
+			}
+		}
+		lastChange = elapsedTime;
+	}
+}
+#endif
+
 bool Creature::hasFallen() {
 	if (m_hasFallen) return m_hasFallen; // true if already down (cannot get back up here)
 	if (m_bodies[BODYPART_LOWER_LEG]->getActivationState() == ISLAND_SLEEPING) m_hasFallen = true; // true if enters in sleeping mode
@@ -504,4 +677,21 @@ btVector3 Creature::computeCenterOfMass() {
 	weightedCOM /= totalMass;
 
 	return weightedCOM;
+}
+
+btVector3 Creature::QuaternionToEulerXYZ(const btQuaternion &quat)
+{
+	btVector3 euler;
+	double w = quat.getW();
+	double x = quat.getX();
+	double y = quat.getY();
+	double z = quat.getZ();
+	double sqw = w*w;
+	double sqx = x*x;
+	double sqy = y*y;
+	double sqz = z*z;
+	euler.setZ(float((atan2(2.0f * (x*y + z*w), (sqx - sqy - sqz + sqw)))));
+	euler.setX(float((atan2(2.0f * (y*z + x*w), (-sqx - sqy + sqz + sqw)))));
+	euler.setY(float((asin(-2.0f * (x*z - y*w)))));
+	return euler;
 }
