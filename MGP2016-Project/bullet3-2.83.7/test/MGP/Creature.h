@@ -5,11 +5,11 @@
 #include "btBulletDynamicsCommon.h"
 
 // Switch Modes, modify to extend modes
-#if 0		
+#if 1		
 #define BASIC_BALANCE		// Basic balancing mode
 #elif 0		
 #define EXTRA_LIMB			// Balancing mode with extra limb
-#elif 1		
+#elif 0		
 #define ADV_BALANCE			// Advanced balancing mode
 #elif 0		
 #define POS_DEPEND			// The pose-dependent balancing mode
@@ -74,6 +74,18 @@ protected:
 
 	btScalar				m_time_step;
 	PIDController		*	m_PIDs[JOINT_COUNT];
+
+	double					k_p_ankle;
+	double					k_i_ankle;
+	double					k_d_ankle;
+
+	double					k_p_knee;
+	double					k_i_knee;
+	double					k_d_knee;
+
+	double					fitnessFunction();
+
+
 #if defined ADV_BALANCE
 	btQuaternion			targetOrientation;
 	bool					op_flag;

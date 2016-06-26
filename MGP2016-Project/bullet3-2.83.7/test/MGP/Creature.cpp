@@ -177,12 +177,20 @@ Creature::Creature (btDynamicsWorld* ownerWorld, const btVector3& positionOffset
 		// =========================
 		PIDController* pidController;
 
+		k_p_ankle = K_P_ANKLE;
+		k_i_ankle = K_P_ANKLE;
+		k_d_ankle = K_P_ANKLE;
+
+		k_p_knee = K_P_KNEE;
+		k_i_knee = K_I_KNEE;
+		k_d_knee = K_D_KNEE;
+				 
 		// ANKLE
-		pidController = new PIDController(K_P_ANKLE, K_I_ANKLE, K_D_ANKLE);
+		pidController = new PIDController(k_p_ankle, k_i_ankle, k_d_ankle);
 		m_PIDs[Creature::JOINT_ANKLE] = pidController;
 		
 		// KNEE
-		pidController = new PIDController(K_P_KNEE, K_I_KNEE, K_D_KNEE);
+		pidController = new PIDController(k_p_knee, k_i_knee, k_d_knee);
 		m_PIDs[Creature::JOINT_KNEE] = pidController;
 
 #elif defined EXTRA_LIMB

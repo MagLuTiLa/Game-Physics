@@ -35,6 +35,9 @@ protected:
 	bool m_PlatformActive;		// Platform is active
 	bool m_BallActive;			// Ball is active
 
+private :
+
+	double fRand(double fMin, double fMax);
 };
 
 #endif

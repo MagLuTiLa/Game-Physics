@@ -1,6 +1,9 @@
 
 #include "Scene.h"
 #include <time.h>
+#include <math.h>
+
+#define M_PI       3.14159265358979323846
 
 Scene::Scene (btDynamicsWorld* ownerWorld) : m_ownerWorld(ownerWorld), m_ball(NULL), m_PlatformActive(false), m_BallActive(false) {
     
@@ -30,6 +33,8 @@ Scene::Scene (btDynamicsWorld* ownerWorld) : m_ownerWorld(ownerWorld), m_ball(NU
 	lastShoot = 0;
 
 	// Ball
+	m_BallActive = true;
+	srand(1337);
 	// Done when necessary
 }
 
@@ -90,7 +95,7 @@ void Scene::update(int elapsedTime, const btVector3& creatureCOM) {
 	if (m_BallActive) {
 
 		// Shoot a ball every four seconds
-		if ( elapsedTime - lastShoot > 40) {
+		if ( elapsedTime - lastShoot > rand() % 40 + 5) {
 		
 			// Delete old ball
 			if (m_ball != NULL) {		
@@ -104,15 +109,16 @@ void Scene::update(int elapsedTime, const btVector3& creatureCOM) {
 			lastShoot = elapsedTime;
 			btTransform startTransform;
 			startTransform.setIdentity();
-			int shootDirection = rand() % 4;
-			btVector3 shootFrom;
-			switch (shootDirection) {
+			//int shootDirection = rand() % 4;
+			double angle = this->fRand(0, 2 * M_PI);
+			btVector3 shootFrom = btVector3(btScalar(0.8*cos(angle)), btScalar(1.2), btScalar(0.8*(sin(angle))));
+			/*switch (shootDirection) {
 			case 0 : { shootFrom = btVector3(btScalar(-0.8),btScalar(1.2),btScalar(0.0)); break; }
 			case 1 : { shootFrom = btVector3(btScalar(0.8),btScalar(1.2),btScalar(0.0)); break; }
 			case 2 : { shootFrom = btVector3(btScalar(0.0),btScalar(1.2),btScalar(0.8)); break; }
 			case 3 : { shootFrom = btVector3(btScalar(0.0),btScalar(1.2),btScalar(-0.8)); break; }
 			default: break;	
-			}
+			}*/
 			startTransform.setOrigin(shootFrom);
 
 			// Create new ball
@@ -129,5 +135,10 @@ void Scene::update(int elapsedTime, const btVector3& creatureCOM) {
 			m_ball->setCcdSweptSphereRadius(0.9f);
 		}
 	}
+}
 
+double Scene::fRand(double fMin, double fMax)
+{
+	double f = (double)rand() / RAND_MAX;
+	return fMin + f * (fMax - fMin);
 }
