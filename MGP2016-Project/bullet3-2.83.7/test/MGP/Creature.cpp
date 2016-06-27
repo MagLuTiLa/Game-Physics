@@ -1,5 +1,6 @@
 
 #include "Creature.h"
+#include "BulletSoftBody/btSoftRigidDynamicsWorld.h"
 // TO DEBUG
 #include <iostream>
 #include <fstream>
@@ -52,6 +53,10 @@ Creature::Creature (btDynamicsWorld* ownerWorld, const btSoftBodyWorldInfo& worl
 		end.setOrigin(btVector3(0.05, 2, 0));
 		//m_bodies[Creature::BODYPART_PONYTAIL] = m_ownerWorld->localCreateRigidBody(btScalar(1.0), offset*transform, m_shapes[Creature::BODYPART_PONYTAIL]);
 		m_tail = btSoftBodyHelpers::CreateRope(m_worldInfo, (offset*transform).getOrigin(), (offset*end).getOrigin(),3,2);
+		((btSoftRigidDynamicsWorld*)ownerWorld)->addSoftBody(m_tail);
+		m_tail->generateBendingConstraints(2);
+		m_tail->m_cfg.piterations = 15;
+		m_tail->randomizeConstraints();
 
 		// Add damping to the rigid bodies
 		for (int i = 0; i < Creature::BODYPART_COUNT; ++i) {
