@@ -1,6 +1,5 @@
 
 #include "Creature.h"
-
 // TO DEBUG
 #include <iostream>
 #include <fstream>
@@ -11,7 +10,7 @@
 #define M_PI_2     1.57079632679489661923
 #define M_PI_4     0.785398163397448309616
 
-Creature::Creature (btDynamicsWorld* ownerWorld, const btVector3& positionOffset) : m_ownerWorld (ownerWorld), m_hasFallen(false), lastChange(0), m_showCOM(false) { // Constructor
+Creature::Creature (btDynamicsWorld* ownerWorld, const btSoftBodyWorldInfo& worldInfo, const btVector3& positionOffset) : m_ownerWorld (ownerWorld), m_worldInfo(worldInfo), m_hasFallen(false), lastChange(0), m_showCOM(false) { // Constructor
 		
 		// Setup the rigid bodies
 		// ======================
@@ -23,8 +22,8 @@ Creature::Creature (btDynamicsWorld* ownerWorld, const btVector3& positionOffset
 		m_shapes[Creature::BODYPART_LOWER_LEG]->setColor(btVector3(btScalar(0.6),btScalar(0.6),btScalar(0.6)));
 		m_shapes[Creature::BODYPART_UPPER_LEG] = new btCapsuleShape(btScalar(0.05), btScalar(0.40));
 		m_shapes[Creature::BODYPART_UPPER_LEG]->setColor(btVector3(btScalar(0.6),btScalar(0.6),btScalar(0.6)));
-		m_shapes[Creature::BODYPART_PONYTAIL] = new btCapsuleShape(btScalar(0.02), btScalar(0.15));
-		m_shapes[Creature::BODYPART_PONYTAIL]->setColor(btVector3(btScalar(0.6), btScalar(0.6), btScalar(0.6)));
+		//m_shapes[Creature::BODYPART_PONYTAIL] = new btCapsuleShape(btScalar(0.02), btScalar(0.15));
+		//m_shapes[Creature::BODYPART_PONYTAIL]->setColor(btVector3(btScalar(0.6), btScalar(0.6), btScalar(0.6)));
 
 		// Setup the body properties
 		btTransform offset; offset.setIdentity();
@@ -48,9 +47,11 @@ Creature::Creature (btDynamicsWorld* ownerWorld, const btVector3& positionOffset
 
 		// PONYTAIL
 		transform.setIdentity();
+		btTransform end = transform;
 		transform.setOrigin(btVector3(btScalar(0.05), btScalar(0.8), btScalar(0.0)));
-		m_bodies[Creature::BODYPART_PONYTAIL] = m_ownerWorld->localCreateRigidBody(btScalar(1.0), offset*transform, m_shapes[Creature::BODYPART_PONYTAIL]);
-
+		end.setOrigin(btVector3(0.05, 2, 0));
+		//m_bodies[Creature::BODYPART_PONYTAIL] = m_ownerWorld->localCreateRigidBody(btScalar(1.0), offset*transform, m_shapes[Creature::BODYPART_PONYTAIL]);
+		m_tail = btSoftBodyHelpers::CreateRope(m_worldInfo, (offset*transform).getOrigin(), (offset*end).getOrigin(),3,2);
 
 		// Add damping to the rigid bodies
 		for (int i = 0; i < Creature::BODYPART_COUNT; ++i) {
@@ -97,7 +98,8 @@ Creature::Creature (btDynamicsWorld* ownerWorld, const btVector3& positionOffset
 		localA.setIdentity(); localB.setIdentity();
 		localA.getBasis().setEulerZYX(0, btScalar(M_PI_2), 0); localA.setOrigin(btVector3(btScalar(0.0), btScalar(0.025), btScalar(0.0)));
 		localB.getBasis().setEulerZYX(0, btScalar(M_PI_2), 0); localB.setOrigin(btVector3(btScalar(0.0), btScalar(-0.25), btScalar(0.0)));
-		hingeJoint = new btHingeConstraint(*m_bodies[Creature::BODYPART_UPPER_LEG], *m_bodies[Creature::BODYPART_PONYTAIL], localA, localB);
+		m_tail->appendAnchor(m_tail->m_nodes.size() - 1, m_bodies[Creature::BODYPART_UPPER_LEG],false,1.0f);
+		//hingeJoint = new btHingeConstraint(*m_bodies[Creature::BODYPART_UPPER_LEG], *m_bodies[Creature::BODYPART_PONYTAIL], localA, localB);
 		hingeJoint->setLimit(btScalar(-M_PI_2), btScalar(M_PI_2));
 
 		hingeJoint->enableAngularMotor(true,btScalar(0.0),btScalar(50.0)); //uncomment to allow for torque control

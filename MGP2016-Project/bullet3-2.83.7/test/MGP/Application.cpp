@@ -91,7 +91,7 @@ void Application::Init_Torus()
 
 void Application::resetScene(const btVector3& startOffset) {
 	if (m_creature != NULL) delete m_creature;
-	m_creature = new Creature(m_dynamicsWorld, startOffset);
+	m_creature = new Creature(m_dynamicsWorld, m_softBodyWorldInfo, startOffset);
 	if (m_scene != NULL) delete m_scene;
 	m_scene = new Scene(m_dynamicsWorld);
 	m_startTime = GetTickCount();

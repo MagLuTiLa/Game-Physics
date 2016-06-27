@@ -3,12 +3,14 @@
 #define CREATURE_H
 
 #include "btBulletDynamicsCommon.h"
+#include "bulletSoftBody/btSoftBody.h"
+#include "bulletSoftBody/btSoftBodyHelpers.h"
 #include <iostream>
 
 class Creature {
 
 public:
-	Creature (btDynamicsWorld* ownerWorld, const btVector3& positionOffset); // Constructor
+	Creature (btDynamicsWorld* ownerWorld, const btSoftBodyWorldInfo& worldInfo, const btVector3& positionOffset); // Constructor
 
 	virtual	~Creature(); // Destructor
 
@@ -20,14 +22,16 @@ public:
 
 protected:
 
-	enum {BODYPART_FOOT,BODYPART_LOWER_LEG,BODYPART_UPPER_LEG,BODYPART_PONYTAIL,BODYPART_COUNT}; // Body parts of the creature
+	enum {BODYPART_FOOT,BODYPART_LOWER_LEG,BODYPART_UPPER_LEG,/*BODYPART_PONYTAIL,*/BODYPART_COUNT}; // Body parts of the creature
 
 	enum {JOINT_ANKLE,JOINT_KNEE,JOINT_TAIL,JOINT_COUNT}; // Joints of the creature
 
 	btDynamicsWorld		*	m_ownerWorld;				// The physics world of the simulation
+	btSoftBodyWorldInfo		m_worldInfo;
 	btCollisionShape	*	m_shapes[BODYPART_COUNT];	// The primitive shape of each body part used in collision
 	btRigidBody			*	m_bodies[BODYPART_COUNT];	// The array of body parts
 	btTypedConstraint	*	m_joints[JOINT_COUNT];		// The type of each joint constraint
+	btSoftBody			*	m_tail;
 
 	int lastChange;										// Time of last change of balance controller
 
