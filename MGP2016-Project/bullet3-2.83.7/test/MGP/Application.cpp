@@ -76,7 +76,7 @@ void Application::Init_Torus()
 		&gIndices[0][0],
 		NUM_TRIANGLES);
 	psb->generateBendingConstraints(2);
-	psb->m_cfg.piterations = 2;
+	psb->m_cfg.piterations = 20;
 	psb->randomizeConstraints();
 	psb->getCollisionShape()->setColor(btVector3(btScalar(1), btScalar(0), btScalar(0)));
 	
