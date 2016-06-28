@@ -49,11 +49,11 @@ Creature::Creature (btDynamicsWorld* ownerWorld, const btSoftBodyWorldInfo& worl
 		// PONYTAIL
 		transform.setIdentity();
 		btTransform end = transform;
-		transform.setOrigin(btVector3(btScalar(0.05), btScalar(0.8), btScalar(0.0)));
-		end.setOrigin(btVector3(0.05, 2, 0));
+		transform.setOrigin(m_bodies[Creature::BODYPART_UPPER_LEG]->getCenterOfMassPosition() + btVector3(btScalar(0.02), btScalar(0.0), btScalar(0.0)));
+		end.setOrigin(btVector3(0.0, 2, 0));
 		//m_bodies[Creature::BODYPART_PONYTAIL] = m_ownerWorld->localCreateRigidBody(btScalar(1.0), offset*transform, m_shapes[Creature::BODYPART_PONYTAIL]);
-		m_tail = btSoftBodyHelpers::CreateRope(m_worldInfo, (offset*transform).getOrigin(), (offset*end).getOrigin(),3,2);
-		((btSoftRigidDynamicsWorld*)ownerWorld)->addSoftBody(m_tail);
+		m_tail = btSoftBodyHelpers::CreateRope(m_worldInfo, (offset*end).getOrigin(), transform.getOrigin(),16,2);
+		((btSoftRigidDynamicsWorld*)ownerWorld)->addSoftBody(m_tail, 1 << 1,0);
 		m_tail->generateBendingConstraints(2);
 		m_tail->m_cfg.piterations = 15;
 		m_tail->randomizeConstraints();
@@ -103,7 +103,7 @@ Creature::Creature (btDynamicsWorld* ownerWorld, const btSoftBodyWorldInfo& worl
 		localA.setIdentity(); localB.setIdentity();
 		localA.getBasis().setEulerZYX(0, btScalar(M_PI_2), 0); localA.setOrigin(btVector3(btScalar(0.0), btScalar(0.025), btScalar(0.0)));
 		localB.getBasis().setEulerZYX(0, btScalar(M_PI_2), 0); localB.setOrigin(btVector3(btScalar(0.0), btScalar(-0.25), btScalar(0.0)));
-		m_tail->appendAnchor(m_tail->m_nodes.size() - 1, m_bodies[Creature::BODYPART_UPPER_LEG],false,1.0f);
+		m_tail->appendAnchor(m_tail->m_nodes.size() - 1, m_bodies[Creature::BODYPART_UPPER_LEG]);
 		//hingeJoint = new btHingeConstraint(*m_bodies[Creature::BODYPART_UPPER_LEG], *m_bodies[Creature::BODYPART_PONYTAIL], localA, localB);
 		hingeJoint->setLimit(btScalar(-M_PI_2), btScalar(M_PI_2));
 
