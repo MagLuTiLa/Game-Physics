@@ -35,7 +35,7 @@ subject to the following restrictions:
 #include "BulletCollision/CollisionShapes/btStaticPlaneShape.h"
 #include "BulletCollision/CollisionShapes/btMultiSphereShape.h"
 #include "BulletCollision/CollisionShapes/btConvexPolyhedron.h"
-
+#include "BulletSoftBody/btSoftBody.h"
 ///
 #include "BulletCollision/CollisionShapes/btShapeHull.h"
 
@@ -402,7 +402,7 @@ inline void glDrawVector(const btVector3& v) { glVertex3d(v[0], v[1], v[2]); }
 
 void GL_ShapeDrawer::drawOpenGL(btScalar* m, const btCollisionShape* shape, const btVector3& color,int	debugMode,const btVector3& worldBoundsMin,const btVector3& worldBoundsMax)
 {
-	
+	int debug = shape->getShapeType();
 	if (shape->getShapeType() == CUSTOM_CONVEX_SHAPE_TYPE)
 	{
 		btVector3 org(m[12], m[13], m[14]);
@@ -871,6 +871,31 @@ void GL_ShapeDrawer::drawOpenGL(btScalar* m, const btCollisionShape* shape, cons
 
 }
 
+void GL_ShapeDrawer::drawSoftBody(btSoftBody *body)
+{
+	btSoftBody::tFaceArray&   faces(body->m_faces);
+	btVector3 color = body->getCollisionShape()->getColor();
+
+	for (int i = 0; i < faces.size(); i++)
+	{
+
+		btVector3 node_0 = faces[i].m_n[0]->m_x;
+		btVector3 node_1 = faces[i].m_n[1]->m_x;
+		btVector3 node_2 = faces[i].m_n[2]->m_x;
+		glBegin(GL_TRIANGLES);
+		glColor3f(color.getX(), color.getY(), color.getZ());
+
+
+		glVertex3d(node_0.getX(), node_0.getY(), node_0.getZ());
+		glVertex3d(node_1.getX(), node_1.getY(), node_1.getZ());
+		glVertex3d(node_2.getX(), node_2.getY(), node_2.getZ());
+
+		glVertex3d(node_2.getX(), node_2.getY(), node_2.getZ());
+		glVertex3d(node_1.getX(), node_1.getY(), node_1.getZ());
+		glVertex3d(node_0.getX(), node_0.getY(), node_0.getZ());
+		glEnd();
+	}
+}
 //
 void		GL_ShapeDrawer::drawShadow(btScalar* m,const btVector3& extrusion,const btCollisionShape* shape,const btVector3& worldBoundsMin,const btVector3& worldBoundsMax)
 {

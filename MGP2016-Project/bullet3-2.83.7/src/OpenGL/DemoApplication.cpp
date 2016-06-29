@@ -16,6 +16,10 @@ subject to the following restrictions:
 
 #include "DemoApplication.h"
 #include "LinearMath/btIDebugDraw.h"
+
+#include "BulletSoftBody/btSoftBody.h"
+#include "BulletSoftBody/btSoftRigidDynamicsWorld.h"
+#include "BulletSoftBody/btSoftBodyHelpers.h"
 #include "BulletDynamics/Dynamics/btDynamicsWorld.h"
 
 #include "BulletDynamics/ConstraintSolver/btPoint2PointConstraint.h"//picking
@@ -833,17 +837,33 @@ void DemoApplication::showProfileInfo(int& xOffset,int& yStart, int yIncr) {
 void DemoApplication::renderscene(int pass) {
 	btScalar m[16];
 	btMatrix3x3	rot;rot.setIdentity();
+	btVector3 aabbMin, aabbMax;
+	m_dynamicsWorld->getBroadphase()->getBroadphaseAabb(aabbMin, aabbMax);
+	aabbMin -= btVector3(BT_LARGE_FLOAT, BT_LARGE_FLOAT, BT_LARGE_FLOAT);
+	aabbMax += btVector3(BT_LARGE_FLOAT, BT_LARGE_FLOAT, BT_LARGE_FLOAT);
 	const int numObjects=m_dynamicsWorld->getNumCollisionObjects();
 	btVector3 wireColor(1,0,0);
 	for(int i=0;i<numObjects;i++) {
 		btCollisionObject*	colObj=m_dynamicsWorld->getCollisionObjectArray()[i];
 		btRigidBody*		body=btRigidBody::upcast(colObj);
+		btSoftBody*			softBody = btSoftBody::upcast(colObj);
 		if(body&&body->getMotionState()) {
 			btDefaultMotionState* myMotionState = (btDefaultMotionState*)body->getMotionState();
 			myMotionState->m_graphicsWorldTrans.getOpenGLMatrix(m);
 			rot=myMotionState->m_graphicsWorldTrans.getBasis();
 		}
+		else if (softBody)
+		{
+			if (pass == 0)
+			{
+				btSoftBodyHelpers::DrawFrame(softBody, m_dynamicsWorld->getDebugDrawer());
+				btSoftBodyHelpers::Draw(softBody, m_dynamicsWorld->getDebugDrawer(), ((btSoftRigidDynamicsWorld*)m_dynamicsWorld)->getDrawFlags());
+				//m_shapeDrawer->drawSoftBody(softBody);
+			}
+			continue;
+		}
 		else {
+			
 			colObj->getWorldTransform().getOpenGLMatrix(m);
 			rot=colObj->getWorldTransform().getBasis();
 		}
@@ -863,10 +883,6 @@ void DemoApplication::renderscene(int pass) {
 		// Object Coloring
 		wireColor = colObj->getCollisionShape()->getColor();
 
-		btVector3 aabbMin,aabbMax;
-		m_dynamicsWorld->getBroadphase()->getBroadphaseAabb(aabbMin,aabbMax);		
-		aabbMin-=btVector3(BT_LARGE_FLOAT,BT_LARGE_FLOAT,BT_LARGE_FLOAT);
-		aabbMax+=btVector3(BT_LARGE_FLOAT,BT_LARGE_FLOAT,BT_LARGE_FLOAT);
 
 		if (!(getDebugMode()& btIDebugDraw::DBG_DrawWireframe)) {
 			switch(pass) {
