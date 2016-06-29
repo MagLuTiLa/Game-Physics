@@ -1,9 +1,12 @@
+#include <list>
+
 
 #ifndef APPLICATION_H
 #define APPLICATION_H
 
 //------------- include/declaration -------------
 #include "OpenGL/GlutDemoApplication.h"
+
 class btBroadphaseInterface;
 class btCollisionShape;
 class btCollisionDispatcher;
@@ -24,6 +27,7 @@ public:
 
 	void initPhysics();				// Initialize the simulation
 	void exitPhysics();				// End the simulation
+	void GALoop();
 
 protected:
 
@@ -32,10 +36,10 @@ protected:
 
 	virtual void keyboardCallback(unsigned char key, int x, int y); // Input management
 
-	void resetScene(const btVector3& startOffset);	// Reset the creature
+	void resetScene(const btVector3& startOffset, double* currentPID_Parameters);	// Reset the creature
 	void update();									// Update objects and display the time elapsed under balance
 	void update(float ms);							// Update objects and display the time elapsed under balance with input time
-
+	int* tournamentSelection(double* fitness, int length, int k);
 
 	Creature						*	m_creature;		// The creature
 	Scene							*	m_scene;		// The scene
@@ -48,7 +52,13 @@ protected:
 	DWORD m_startTime;		// Time starter
 	DWORD m_currentTime;	// Time counter
 	int m_elapsedTime;		// Time elapsed in 10e-1 sec
+	const int population_size = 10;
+	const int num_pid_param = 6;
+	const double param_scalar[6] = { 200.0f, 0.01f, 10.0f, 150.0f, 0.1f, 10.0f };
 
+	double population[10][6]; // Hardcoded due to memory allocation (else it has to be done manually)
+	const int max_epochs = 100;
+	double tournament_prob = 0.5;
 };
 
 #endif

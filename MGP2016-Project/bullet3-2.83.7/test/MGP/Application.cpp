@@ -1,4 +1,4 @@
-
+#include <random>
 #include "btBulletDynamicsCommon.h"
 #include "OpenGL/GlutStuff.h"
 #include "OpenGL/GL_ShapeDrawer.h"
@@ -36,19 +36,71 @@ void Application::initPhysics() {
 	fixedGround->setCollisionShape(groundShape);
 	fixedGround->setWorldTransform(groundTransform);
 	m_dynamicsWorld->addCollisionObject(fixedGround);
+	// Init GA Stuff
+	// =============
+	// Fitness function = Time elapsed
+	// Make population
+	std::default_random_engine generator;
+	std::normal_distribution<double> distribution(0.0, 1.0);
+
+	for (int i = 0; i < population_size; i++) {
+		for (int j = 0; j < num_pid_param; j++) {
+			population[i][j] = distribution(generator) + param_scalar[j];
+		}
+	}
 
 	// Init Scene
 	// ==========
 	btVector3 startOffset(0,0.55,0);
-	resetScene(startOffset);
+	resetScene(startOffset, population[0]);
 	clientResetScene();
 	m_startTime = GetTickCount();
 	setCameraDistance(1.5);
+
+
+
 }
 
-void Application::resetScene(const btVector3& startOffset) {
+void Application::GALoop() {
+	// Loop over generations
+	const int sz = 10; // Should be population size, but the ide nags.
+	double fitness[sz] = {};
+	for (int epoch = 0; epoch < max_epochs; epoch++) {
+		// Find individual scores
+		for (int i = 0; i < population_size; i++) {
+			btVector3 startOffset(0, 0.55, 0);
+			resetScene(startOffset, population[0]);
+			clientResetScene();
+			m_startTime = GetTickCount();
+			while (!m_creature->hasFallen()) {} // Wait to fall
+			fitness[i] = m_elapsedTime;
+		}
+		// Tournament Selection
+		int* chosen_parents = Application::tournamentSelection(fitness, Application::population_size, 2);
+		// Generate offspring (combine, somehow)
+
+		// Mutilate offspring (mutate)
+
+		// Update population = add new ones and remove old such that size stays the same.
+	}
+}
+
+int* Application::tournamentSelection(double* fitness, int length, int k) {
+	//Selects index of best fitness with probability p = Application::tournament_prob
+	// Selects second best with prob p*(1-p)
+	// Selects third best with prob p*(1-p)*(1-p)
+	// And so on, until k are selected.
+
+	// length is the size of the fitness.
+
+	// Return k indices.
+	int toReturn[2] = { 0, 2 };
+	return toReturn;
+}
+
+void Application::resetScene(const btVector3& startOffset, double* currentPID_Parameters) {
 	if (m_creature != NULL) delete m_creature;
-	m_creature = new Creature(m_dynamicsWorld, startOffset);
+	m_creature = new Creature(m_dynamicsWorld, startOffset, currentPID_Parameters);
 	if (m_scene != NULL) delete m_scene;
 	m_scene = new Scene(m_dynamicsWorld);
 	m_startTime = GetTickCount();
@@ -109,12 +161,12 @@ void Application::keyboardCallback(unsigned char key, int x, int y) {
     // You can add your key bindings here.
     // Be careful to not use a key already listed in DemoApplication::keyboardCallback
 	switch (key) {
-		case 'e':
+	/*	case 'e':
 			{
 				btVector3 startOffset(0,0.55,0);
 				resetScene(startOffset);
 				break;
-			}
+			}*/
 		case 'r':
 			{
 				m_scene->switchPlatform();

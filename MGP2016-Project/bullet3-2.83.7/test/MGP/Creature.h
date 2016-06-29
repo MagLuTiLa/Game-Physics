@@ -20,7 +20,7 @@ class PIDController;
 class Creature {
 
 public:
-	Creature (btDynamicsWorld* ownerWorld, const btVector3& positionOffset); // Constructor
+	Creature(btDynamicsWorld* ownerWorld, const btVector3& positionOffset, double* PID_Parameters); // Constructor
 
 	virtual	~Creature();										// Destructor
 

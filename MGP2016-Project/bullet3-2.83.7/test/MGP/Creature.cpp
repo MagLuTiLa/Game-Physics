@@ -99,7 +99,7 @@
 
 #endif
 
-Creature::Creature (btDynamicsWorld* ownerWorld, const btVector3& positionOffset) : m_ownerWorld (ownerWorld), m_hasFallen(false), lastChange(0), m_showCOM(false), m_time_step(10.0f) { // Constructor
+Creature::Creature (btDynamicsWorld* ownerWorld, const btVector3& positionOffset, double* PID_Parameters) : m_ownerWorld (ownerWorld), m_hasFallen(false), lastChange(0), m_showCOM(false), m_time_step(10.0f) { // Constructor
 #if defined BASIC_BALANCE		
 		// Setup the rigid bodies
 		// ======================
@@ -177,13 +177,13 @@ Creature::Creature (btDynamicsWorld* ownerWorld, const btVector3& positionOffset
 		// =========================
 		PIDController* pidController;
 
-		k_p_ankle = K_P_ANKLE;
-		k_i_ankle = K_P_ANKLE;
-		k_d_ankle = K_P_ANKLE;
+		k_p_ankle = PID_Parameters[0];
+		k_i_ankle = PID_Parameters[1];
+		k_d_ankle = PID_Parameters[2];
 
-		k_p_knee = K_P_KNEE;
-		k_i_knee = K_I_KNEE;
-		k_d_knee = K_D_KNEE;
+		k_p_knee = PID_Parameters[3];
+		k_i_knee = PID_Parameters[4];
+		k_d_knee = PID_Parameters[5];
 				 
 		// ANKLE
 		pidController = new PIDController(k_p_ankle, k_i_ankle, k_d_ankle);

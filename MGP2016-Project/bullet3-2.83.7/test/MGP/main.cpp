@@ -13,6 +13,7 @@ int main(int argc,char* argv[])
 
         app.initPhysics();
 		app.getDynamicsWorld()->setDebugDrawer(&gDebugDrawer);
+		app.GALoop();
 
         return glutmain(argc, argv,1024,768,"INFOMGP - Project",&app);
 }
