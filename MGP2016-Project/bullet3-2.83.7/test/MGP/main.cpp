@@ -15,7 +15,7 @@ int main(int argc,char* argv[])
 
 		app.initPhysics();
 		app.getDynamicsWorld()->setDebugDrawer(&gDebugDrawer);
-		std::thread thread2 (&Application::GALoop, &app);
+		//std::thread thread2(&Application::GALoop, &app);
 
         return glutmain(argc, argv,1024,768,"INFOMGP - Project",&app);
 }

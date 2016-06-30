@@ -28,7 +28,8 @@ public:
 
 	void initPhysics();				// Initialize the simulation
 	void exitPhysics();				// End the simulation
-	void GALoop();
+	//void GALoop();
+	void GAStep();
 
 protected:
 
@@ -40,10 +41,10 @@ protected:
 	void resetScene(const btVector3& startOffset, double* currentPID_Parameters);	// Reset the creature
 	void update();									// Update objects and display the time elapsed under balance
 	void update(float ms);							// Update objects and display the time elapsed under balance with input time
-	int* selection(double* fitness, int length, int k);
-	double** generate_offspring(double** population, int* chosen_parents, int num_parents, int num_children);
-	double** mutate(double** offspring, int num_children);
-	void update_population(double** offspring, int num_children);
+	int** selection(double** fitness, int length, int k);
+	double*** generate_offspring(int** chosen_parents, int num_parents, int num_children);
+	double*** mutate(double*** offspring, int num_children);
+	void update_population(double*** offspring, int num_children);
 
 	Creature						*	m_creature;		// The creature
 	Scene							*	m_scene;		// The scene
@@ -63,10 +64,9 @@ protected:
 	double** population = new double*[population_size]; // Hardcoded due to memory allocation (else it has to be done manually)
 	const int max_epochs = 100;
 	double tournament_prob = 0.5;
-
-	std::mutex mutex;
-	std::unique_lock<std::mutex> lock;
-	std::condition_variable wait_for_exec;
+	int epoch;
+	int currentIndividual;
+	double* fitnessScores;
 
 	bool done_exec;
 };

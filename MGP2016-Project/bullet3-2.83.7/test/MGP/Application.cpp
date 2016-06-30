@@ -62,80 +62,110 @@ void Application::initPhysics() {
 	m_startTime = GetTickCount();
 	setCameraDistance(1.5);
 	
-	std::mutex mutex;
-	std::unique_lock<std::mutex> lock(mutex);
-	done_exec = false;
+	fitnessScores = new double[population_size];
+	currentIndividual = 0;
+	epoch = 0;
 }
 
-void Application::GALoop() {
-	// Loop over generations
-	const int sz = 10; // Should be population size, but the ide nags.
-	double fitness[sz] = {};
-	for (int epoch = 0; epoch < max_epochs; epoch++) {
-		// Find individual scores
-		for (int i = 0; i < population_size; i++) {
+void Application::GAStep() {
+	if (epoch < max_epochs) {
+		fitnessScores[currentIndividual] = m_elapsedTime;
+		currentIndividual++;
+		if (currentIndividual < population_size) {
 			btVector3 startOffset(0, 0.55, 0);
-			resetScene(startOffset, population[0]);
+			resetScene(startOffset, population[currentIndividual]);
 			clientResetScene();
 			m_startTime = GetTickCount();
-			// TODO do this in a seperate thread
-			wait_for_exec.wait(lock, [this] {return done_exec; }); // Wait to fall
-			fitness[i] = m_elapsedTime;
-			done_exec = false;
 		}
-		// Selection
-		int num_parents = 3;
-		int num_children = 3;
-		int* chosen_parents = Application::selection(fitness, Application::population_size, num_parents);
-		// Generate offspring (combine, somehow)
-		double** offspring = Application::generate_offspring(Application::population, chosen_parents, num_parents, num_children);
-		// Mutilate offspring (mutate)
-		offspring = Application::mutate(offspring, num_children);
-		// Update population = add new ones and remove old such that size stays the same.
-		update_population(offspring, num_children);
+		else {
+			// Selection
+			int num_parents = 3;
+			int num_children = 3;
+			int** chosen_parents = Application::selection(&fitnessScores, Application::population_size, num_parents);
+			// Generate offspring (combine, somehow)
+			double*** offspring = Application::generate_offspring(chosen_parents, num_parents, num_children);
+			// Mutilate offspring (mutate)
+			offspring = Application::mutate(offspring, num_children);
+			// Update population = add new ones and remove old such that size stays the same.
+			update_population(offspring, num_children);
+		}
 	}
 }
 
-void Application::update_population(double** offspring, int num_children) {
+//void Application::GALoop() {
+//	// Loop over generations
+//	const int sz = 10; // Should be population size, but the ide nags.
+//	double fitness[sz] = {};
+//	for (int epoch = 0; epoch < max_epochs; epoch++) {
+//		// Find individual scores
+//		for (int i = 0; i < population_size; i++) {
+//			btVector3 startOffset(0, 0.55, 0);
+//			resetScene(startOffset, population[0]);
+//			clientResetScene();
+//			m_startTime = GetTickCount();
+//			// TODO do this in a seperate thread
+//			//wait_for_exec.wait(lock, [this] {return done_exec; }); // Wait to fall
+//			while (!done_exec){
+//				//Application::update();
+//				//Application::displayCallback();
+//				Application::clientMoveAndDisplay();
+//			}
+//			fitness[i] = m_elapsedTime;
+//			done_exec = false;
+//		}
+//		// Selection
+//		int num_parents = 3;
+//		int num_children = 3;
+//		int* chosen_parents = Application::selection(fitness, Application::population_size, num_parents);
+//		// Generate offspring (combine, somehow)
+//		double** offspring = Application::generate_offspring(Application::population, chosen_parents, num_parents, num_children);
+//		// Mutilate offspring (mutate)
+//		offspring = Application::mutate(offspring, num_children);
+//		// Update population = add new ones and remove old such that size stays the same.
+//		update_population(offspring, num_children);
+//	}
+//}
+
+void Application::update_population(double*** offspring, int num_children) {
 	for (int i = 0; i < num_children; i++)
 	{
 		int toRemove = rand() % population_size;
-		population[toRemove] = offspring[i];
+		population[toRemove] = *offspring[i];
 	}
 }
 
-double** Application::mutate(double** offspring, int num_children) {
+double*** Application::mutate(double*** offspring, int num_children) {
 	for (int i = 0; i < num_children; i++) {
 		for (int j = 0; j < num_pid_param; i++)
 		{
 			double prob = ((double)rand() / (double)RAND_MAX);
 			if (prob < 0.2) {
-				offspring[i][j] += ((double)rand()*2 / (double)RAND_MAX) - 1.0;
+				*offspring[i][j] += ((double)rand()*2 / (double)RAND_MAX) - 1.0;
 			}
-
 		}
 	}
 	return offspring;
 }
 
-double** Application::generate_offspring(double** population, int* chosen_parents, int num_parents, int num_children) {
-	double** toReturn = new double*[num_children];
+double*** Application::generate_offspring(int** chosen_parents, int num_parents, int num_children) {
+	double*** toReturn = new double**;
+	*toReturn = new double*[num_children];
 	for (int i = 0; i < num_children; i++) {
-		toReturn[i] = new double[num_pid_param];
+		*toReturn[i] = new double[num_pid_param];
 		for (int j = 0; j < Application::num_pid_param; j++) {
 			int parent = rand() % num_parents;
-			toReturn[i][j] = population[parent][j];
+			*toReturn[i][j] = population[*chosen_parents[parent]][j];
 		}
 	}
 	return toReturn;
 }
 
-int* Application::selection(double* fitness, int length, int k) {
+int** Application::selection(double** fitness, int length, int k) {
 	int* toReturn = new int[k];
 	for (int i = 0; i < k; i++) {
 		toReturn[i] = rand() % length;
 	}
-	return toReturn;
+	return &toReturn;
 }
 
 void Application::resetScene(const btVector3& startOffset, double* currentPID_Parameters) {
@@ -264,8 +294,7 @@ void Application::update() {
 	if (!m_creature->hasFallen()) {
 		m_currentTime = GetTickCount();
 	} else {
-		done_exec = true;
-		wait_for_exec.notify_one();
+		GAStep();
 	}
 	m_elapsedTime = (int)(((double) m_currentTime - m_startTime)/100.0);
 
