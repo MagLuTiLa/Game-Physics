@@ -66,7 +66,6 @@ void Application::initPhysics() {
 	clientResetScene();
 	m_startTime = GetTickCount();
 	setCameraDistance(1.5);
-	Init_Torus(btVector3(0, 1, 0));
 }
 
 void Application::Init_Torus(const btVector3 &position)
@@ -75,6 +74,9 @@ void Application::Init_Torus(const btVector3 &position)
 	btSoftBody*	psb = btSoftBodyHelpers::CreateFromTriMesh(m_softBodyWorldInfo, gVertices,
 		&gIndices[0][0],
 		NUM_TRIANGLES);
+
+	//btSoftBody* ball = btSoftBodyHelpers::CreateEllipsoid(m_softBodyWorldInfo, btVector3(btScalar(0), btScalar(0.5), btScalar(0)), btVector3(btScalar(0.1), btScalar(0.1), btScalar(.1)), 50);
+	
 	psb->m_materials[0]->m_kLST = 0.25;
 	psb->m_cfg.kMT = 0.2;
 	psb->scale(btVector3(.2, .2, .2));
@@ -88,12 +90,18 @@ void Application::Init_Torus(const btVector3 &position)
 	btMatrix3x3	m;
 	m.setEulerZYX(0, 0, 0);
 	psb->transform(btTransform(m, position));
-	psb->setTotalMass(10, true);
-	//psb->setPose(true, true);
+	psb->setTotalMass(5, true);
 	((btSoftRigidDynamicsWorld*)m_dynamicsWorld)->addSoftBody(psb);
 }
 
 void Application::resetScene(const btVector3& startOffset) {
+
+	btSoftBodyArray softBodyArray = ((btSoftRigidDynamicsWorld*)m_dynamicsWorld)->getSoftBodyArray();
+	for (int i = 0; i < softBodyArray.size(); i++)
+		((btSoftRigidDynamicsWorld*)m_dynamicsWorld)->removeSoftBody(softBodyArray[i]);
+
+	Init_Torus(btVector3(0, 2.5, 0));
+
 	if (m_creature != NULL) delete m_creature;
 	m_creature = new Creature(m_dynamicsWorld, startOffset);
 	if (m_scene != NULL) delete m_scene;
