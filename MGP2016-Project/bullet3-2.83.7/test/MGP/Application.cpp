@@ -116,6 +116,7 @@ void Application::clientMoveAndDisplay() {
 	// ====================
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
 	float ms = getDeltaTimeMicroseconds();
+	std::cout << ms << std::endl;
 	float minFPS = 1000000.f/60.f;
 	if (ms > minFPS) ms = minFPS;
 	if (m_dynamicsWorld) {	// Here we force the frame rate to 60pfs in advanced balance mode

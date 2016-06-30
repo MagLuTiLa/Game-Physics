@@ -13,7 +13,7 @@
 #define M_PI_4     0.785398163397448309616
 #define EPSILON	   0.0000001f
 #define ACTION_BIAS 0.00001f
-#define MAX_TORQUE 50.0000f
+#define MAX_TORQUE 60.0000f
 
 
 // Tune PID parameters here, please tune each set separately, i.e. p&i&d for different modes
@@ -730,11 +730,20 @@ void Creature::update(int elapsedTime, float ms)
 	if (ms > 2000 && ms < 3000) {
 		op_flag = 1;
 	}
-	else if (ms > 3000 && ms < 4500) {
+	else if (ms > 3000 && ms < 4000) {
 		op_flag = 2;
 	}
-	else if (ms > 4000 && ms < 7000) {
+	else if (ms > 4000 && ms < 5000) {
 		op_flag = 3;
+	}
+	else if (ms > 5000 && ms < 6000) {
+		op_flag = 5;
+	}
+	else if (ms > 6000 && ms < 7000) {
+		op_flag = 6;
+	}
+	else if (ms < 2000) {
+		op_flag = 4;
 	}
 	// BALANCE CONTROLLER
 	// ==================
@@ -785,6 +794,15 @@ void Creature::update(int elapsedTime, float ms)
 					m_bodies[i]->applyTorqueImpulse(torque*ms * 0.000004);
 				else if (op_flag == 3)
 					m_bodies[i]->applyTorqueImpulse(torque*ms * 0.000003);
+				else if (op_flag == 4) {
+					m_bodies[i]->applyTorqueImpulse(torque*ms * 0.000007);
+				}
+				else if (op_flag == 5) {
+					m_bodies[i]->applyTorqueImpulse(torque*ms * 0.000002);
+				}
+				else if (op_flag == 6) {
+					m_bodies[i]->applyTorqueImpulse(torque*ms * 0.0000015);
+				}
 				else m_bodies[i]->applyTorqueImpulse(torque*ms * 0.000001);
 			}
 		}

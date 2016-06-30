@@ -7,13 +7,13 @@
 // Switch Modes, modify to extend modes
 #if 0		
 #define BASIC_BALANCE		// Basic balancing mode
-#elif 1	
+#elif 0	
 #define EXTRA_LIMB			// Balancing mode with extra limb
 #elif 0		
 #define ADV_BALANCE			// Advanced balancing mode
 #elif 0	
 #define POS_DEPEND			// The pose-dependent balancing mode
-#elif 0
+#elif 1
 #define MANY_JOINT			// The many joints leg mode
 #endif
 
