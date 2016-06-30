@@ -111,7 +111,9 @@ void Application::clientMoveAndDisplay() {
 #elif defined EXTRA_LIMB
 		m_dynamicsWorld->stepSimulation(ms / 1000000.f);
 #elif defined ADV_BALANCE
-		m_dynamicsWorld->stepSimulation(ms / 1000000.f, 2, 1.0f / 60.0f);
+		m_dynamicsWorld->stepSimulation(ms / 1000000.f, 1, 1.0f / 60.0f);
+#elif defined MANY_JOINT
+		m_dynamicsWorld->stepSimulation(ms / 1000000.f, 1, 1.0f / 60.0f);
 #elif defined POS_DEPEND
 		m_dynamicsWorld->stepSimulation(ms / 1000000.f);
 #endif
@@ -125,6 +127,8 @@ void Application::clientMoveAndDisplay() {
 #elif defined EXTRA_LIMB
 	update();
 #elif defined ADV_BALANCE
+	update(ms);
+#elif defined MANY_JOINT
 	update(ms);
 #elif defined POS_DEPEND
 	update();
@@ -247,6 +251,9 @@ void Application::update(float ms) {
 	m_scene->update((!m_creature->hasFallen()) ? m_elapsedTime : -1, m_creature->getCOM());
 
 #if defined ADV_BALANCE
+	// Control the creature movements
+	m_creature->update((int)(m_currentTime - m_startTime), ms);
+#elif defined MANY_JOINT
 	// Control the creature movements
 	m_creature->update((int)(m_currentTime - m_startTime), ms);
 #endif

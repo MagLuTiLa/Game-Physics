@@ -50,6 +50,20 @@
 	#define K_I_U_LEG	0.0f
 	#define K_D_U_LEG	39.0f
 
+#elif defined MANY_JOINT
+#define K_P_FOOT	5.0f
+#define K_I_FOOT	0.0f
+#define K_D_FOOT	5.0f
+
+#define K_P_L_LEG	45.0f
+#define K_I_L_LEG	0.0f
+#define K_D_L_LEG	45.0f
+
+#define K_P_U_LEG	39.0f
+#define K_I_U_LEG	0.0f
+#define K_D_U_LEG	39.0f
+
+
 #endif
 
 // Mode swtichtes are moved to header, CREATURE_H_
@@ -476,7 +490,7 @@ Creature::Creature (btDynamicsWorld* ownerWorld, const btVector3& positionOffset
 Creature::~Creature() { // Destructor
 		// Remove all joint constraints
 #if defined MANY_JOINT
-		for (int i = 0; i < Creature::BODYPART_COUNT; ++i) {
+		for (int i = 0; i < Creature::JOINT_COUNT; ++i) {
 			m_ownerWorld->removeConstraint(m_joints[i]);
 			delete m_joints[i]; m_joints[i] = NULL;
 		}		
@@ -761,13 +775,11 @@ void Creature::update(int elapsedTime, float ms)
 			if (deltaEuler.norm() > 0.01)
 			{
 				// PID controller, but apply to vector.
-				//btVector3 torque = control(deltaEuler);
 				btVector3 torque = m_PIDs[i]->solve(deltaEuler, m_time_step);
 				// apply torque impulse to body, instead of to joints
 				if (!op_flag)
 					m_bodies[i]->applyTorqueImpulse(torque*ms * 0.00001);
 				else m_bodies[i]->applyTorqueImpulse(torque*ms * 0.000001);
-				//m_bodies[i]->applyTorque(torque);
 			}
 		}
 		lastChange = elapsedTime;
@@ -850,7 +862,7 @@ void Creature::update(int elapsedTime, float ms)
 #if defined MANY_JOINT
 bool Creature::hasFallen(){
 	if (m_hasFallen) return m_hasFallen; // true if already down (cannot get back up here)
-	for (int i = 1; i < 6; ++i) {
+	for (int i = 1; i < BODYPART_COUNT; ++i) {
 		if (m_bodies[i]->getActivationState() == ISLAND_SLEEPING) m_hasFallen = true; // true if enters in sleeping mode
 		if (m_bodies[i]->getCenterOfMassPosition().getY() < 0.15 ||
 			m_bodies[i]->getCenterOfMassPosition().getY() < 0.15 ||
@@ -879,7 +891,7 @@ btVector3 Creature::computeCenterOfMass() {
 	// Compute COM of each object, return the weighted average
 	btScalar totalMass = 0.0f;
 	btVector3 weightedCOM(0, 0, 0);
-	for (int i = 0; i < Creature::BODYPART_COUNT; ++i)
+	for (int i = 0; i < BODYPART_COUNT; ++i)
 	{
 		btScalar bodyMass = 1.0f / m_bodies[i]->getInvMass();
 		totalMass += bodyMass;
