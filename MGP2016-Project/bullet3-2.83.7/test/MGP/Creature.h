@@ -5,15 +5,13 @@
 #include "btBulletDynamicsCommon.h"
 
 // Switch Modes, modify to extend modes
-#if 0		
+#if 1		
 #define BASIC_BALANCE		// Basic balancing mode
 #elif 0	
 #define EXTRA_LIMB			// Balancing mode with extra limb
 #elif 0		
 #define ADV_BALANCE			// Advanced balancing mode
-#elif 0	
-#define POS_DEPEND			// The pose-dependent balancing mode
-#elif 1
+#elif 0
 #define MANY_JOINT			// The many joints leg mode
 #endif
 
@@ -68,8 +66,6 @@ protected:
 	btPoint2PointConstraint	*	m_joints[JOINT_COUNT];	// The type of each joint constraint: point2point
 #elif defined MANY_JOINT
 	btPoint2PointConstraint	*	m_joints[JOINT_COUNT];	// The type of each joint constraint: point2point
-#elif defined POS_DEPEND
-	btHingeConstraint	*	m_joints[JOINT_COUNT];		// The type of each joint constraint: hinge
 #endif
 
 	int lastChange;										// Time of last change of balance controller
