@@ -13,7 +13,7 @@
 #define M_PI_4     0.785398163397448309616
 #define EPSILON	   0.0000001f
 #define ACTION_BIAS 0.00001f
-#define MAX_TORQUE 34.0000f
+#define MAX_TORQUE 42.0000f
 
 // Tune PID parameters here, please tune each set separately, i.e. p&i&d for different modes
 #if defined BASIC_BALANCE

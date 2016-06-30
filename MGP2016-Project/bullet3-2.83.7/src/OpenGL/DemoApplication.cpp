@@ -444,7 +444,7 @@ void DemoApplication::setShootBoxShape() {
 void DemoApplication::shootBox(const btVector3& destination) {
 
 	if (m_dynamicsWorld) {
-		float mass = 1.f;
+		float mass = 10.f;
 		btTransform startTransform;
 		startTransform.setIdentity();
 		btVector3 camPos = getCameraPosition();
