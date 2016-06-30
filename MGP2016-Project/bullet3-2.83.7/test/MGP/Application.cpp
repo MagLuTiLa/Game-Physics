@@ -65,28 +65,33 @@ void Application::initPhysics() {
 	resetScene(startOffset);
 	clientResetScene();
 	m_startTime = GetTickCount();
-	setCameraDistance(1.5); 
-	Init_Torus();
+	setCameraDistance(1.5);
+	Init_Torus(btVector3(0, 1, 0));
 }
 
-void Application::Init_Torus()
+void Application::Init_Torus(const btVector3 &position)
 {
 	//TRACEDEMO
 	btSoftBody*	psb = btSoftBodyHelpers::CreateFromTriMesh(m_softBodyWorldInfo, gVertices,
 		&gIndices[0][0],
 		NUM_TRIANGLES);
+	psb->m_materials[0]->m_kLST = 0.25;
+	psb->m_cfg.kMT = 0.2;
+	psb->scale(btVector3(.2, .2, .2));
 	psb->generateBendingConstraints(2);
+
+	psb->getCollisionShape()->setMargin(0.12);
 	psb->m_cfg.piterations = 20;
 	psb->randomizeConstraints();
 	psb->getCollisionShape()->setColor(btVector3(btScalar(1), btScalar(0), btScalar(0)));
 	
 	btMatrix3x3	m;
 	m.setEulerZYX(0, 0, 0);
-	psb->transform(btTransform(m, btVector3(0, 10, 0)));
-	//psb->scale(btVector3(.2, .2, .2));
-	psb->setTotalMass(15, true);
+	psb->transform(btTransform(m, position));
+	psb->setTotalMass(10, true);
+	//psb->setPose(true, true);
 	((btSoftRigidDynamicsWorld*)m_dynamicsWorld)->addSoftBody(psb);
-
+	m_dynamicsWorld->updateSingleAabb(psb);
 }
 
 void Application::resetScene(const btVector3& startOffset) {

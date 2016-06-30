@@ -24,7 +24,7 @@ public:
 	virtual ~Application() {	exitPhysics(); } // Destructor
 
 	void initPhysics();				// Initialize the simulation
-	void Init_Torus();
+	void Init_Torus(const btVector3 & position);
 	void exitPhysics();				// End the simulation
 
 protected:
