@@ -7,6 +7,9 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <mutex>
+#include <thread>
+#include <condition_variable>
 
 #include "Application.h"
 #include "Creature.h"
@@ -42,7 +45,9 @@ void Application::initPhysics() {
 	// Make population
 	std::default_random_engine generator;
 	std::normal_distribution<double> distribution(0.0, 1.0);
-
+	for (int i = 0; i < population_size; i++) {
+		population[i] = new double[num_pid_param];
+	}
 	for (int i = 0; i < population_size; i++) {
 		for (int j = 0; j < num_pid_param; j++) {
 			population[i][j] = distribution(generator) + param_scalar[j];
@@ -56,9 +61,10 @@ void Application::initPhysics() {
 	clientResetScene();
 	m_startTime = GetTickCount();
 	setCameraDistance(1.5);
-
-
-
+	
+	std::mutex mutex;
+	std::unique_lock<std::mutex> lock(mutex);
+	done_exec = false;
 }
 
 void Application::GALoop() {
@@ -72,29 +78,63 @@ void Application::GALoop() {
 			resetScene(startOffset, population[0]);
 			clientResetScene();
 			m_startTime = GetTickCount();
-			while (!m_creature->hasFallen()) {} // Wait to fall
+			// TODO do this in a seperate thread
+			wait_for_exec.wait(lock, [this] {return done_exec; }); // Wait to fall
 			fitness[i] = m_elapsedTime;
+			done_exec = false;
 		}
-		// Tournament Selection
-		int* chosen_parents = Application::tournamentSelection(fitness, Application::population_size, 2);
+		// Selection
+		int num_parents = 3;
+		int num_children = 3;
+		int* chosen_parents = Application::selection(fitness, Application::population_size, num_parents);
 		// Generate offspring (combine, somehow)
-
+		double** offspring = Application::generate_offspring(Application::population, chosen_parents, num_parents, num_children);
 		// Mutilate offspring (mutate)
-
+		offspring = Application::mutate(offspring, num_children);
 		// Update population = add new ones and remove old such that size stays the same.
+		update_population(offspring, num_children);
 	}
 }
 
-int* Application::tournamentSelection(double* fitness, int length, int k) {
-	//Selects index of best fitness with probability p = Application::tournament_prob
-	// Selects second best with prob p*(1-p)
-	// Selects third best with prob p*(1-p)*(1-p)
-	// And so on, until k are selected.
+void Application::update_population(double** offspring, int num_children) {
+	for (int i = 0; i < num_children; i++)
+	{
+		int toRemove = rand() % population_size;
+		population[toRemove] = offspring[i];
+	}
+}
 
-	// length is the size of the fitness.
+double** Application::mutate(double** offspring, int num_children) {
+	for (int i = 0; i < num_children; i++) {
+		for (int j = 0; j < num_pid_param; i++)
+		{
+			double prob = ((double)rand() / (double)RAND_MAX);
+			if (prob < 0.2) {
+				offspring[i][j] += ((double)rand()*2 / (double)RAND_MAX) - 1.0;
+			}
 
-	// Return k indices.
-	int toReturn[2] = { 0, 2 };
+		}
+	}
+	return offspring;
+}
+
+double** Application::generate_offspring(double** population, int* chosen_parents, int num_parents, int num_children) {
+	double** toReturn = new double*[num_children];
+	for (int i = 0; i < num_children; i++) {
+		toReturn[i] = new double[num_pid_param];
+		for (int j = 0; j < Application::num_pid_param; j++) {
+			int parent = rand() % num_parents;
+			toReturn[i][j] = population[parent][j];
+		}
+	}
+	return toReturn;
+}
+
+int* Application::selection(double* fitness, int length, int k) {
+	int* toReturn = new int[k];
+	for (int i = 0; i < k; i++) {
+		toReturn[i] = rand() % length;
+	}
 	return toReturn;
 }
 
@@ -221,7 +261,12 @@ void Application::exitPhysics() {
 void Application::update() {	
 
 	// Do not update time if creature fallen
-	if (!m_creature->hasFallen()) m_currentTime = GetTickCount();
+	if (!m_creature->hasFallen()) {
+		m_currentTime = GetTickCount();
+	} else {
+		done_exec = true;
+		wait_for_exec.notify_one();
+	}
 	m_elapsedTime = (int)(((double) m_currentTime - m_startTime)/100.0);
 
 	// Move the platform if not fallen
