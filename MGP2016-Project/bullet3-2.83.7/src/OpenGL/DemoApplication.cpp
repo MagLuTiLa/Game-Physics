@@ -858,7 +858,7 @@ void DemoApplication::renderscene(int pass) {
 			{
 				btSoftBodyHelpers::DrawFrame(softBody, m_dynamicsWorld->getDebugDrawer());
 				btSoftBodyHelpers::Draw(softBody, m_dynamicsWorld->getDebugDrawer(), ((btSoftRigidDynamicsWorld*)m_dynamicsWorld)->getDrawFlags());
-				m_shapeDrawer->drawSoftBody(softBody);
+				//m_shapeDrawer->drawSoftBody(softBody);
 			}
 			continue;
 		}

@@ -91,7 +91,6 @@ void Application::Init_Torus(const btVector3 &position)
 	psb->setTotalMass(10, true);
 	//psb->setPose(true, true);
 	((btSoftRigidDynamicsWorld*)m_dynamicsWorld)->addSoftBody(psb);
-	m_dynamicsWorld->updateSingleAabb(psb);
 }
 
 void Application::resetScene(const btVector3& startOffset) {
