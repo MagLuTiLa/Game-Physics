@@ -100,7 +100,8 @@ void Application::resetScene(const btVector3& startOffset) {
 	for (int i = 0; i < softBodyArray.size(); i++)
 		((btSoftRigidDynamicsWorld*)m_dynamicsWorld)->removeSoftBody(softBodyArray[i]);
 
-	Init_Torus(btVector3(0, 2.5, 0));
+	if (spawnTorus)
+		Init_Torus(btVector3(0, 2.5, 0));
 
 	if (m_creature != NULL) delete m_creature;
 	m_creature = new Creature(m_dynamicsWorld, startOffset);
@@ -175,6 +176,12 @@ void Application::keyboardCallback(unsigned char key, int x, int y) {
 				m_scene->switchPlatform();
 				break;
 			}
+		case 's':
+		{
+			spawnTorus = !spawnTorus;
+			btVector3 startOffset(0, 0.55, 0);
+			resetScene(startOffset);
+		}
 		case 't':
 			{
 				m_scene->switchBall();
@@ -234,7 +241,7 @@ void Application::update() {
 	m_creature->update((int)(m_currentTime - m_startTime));
 
 	// Display info
-	DemoApplication::displayProfileString(10,20,"Q=quit E=reset R=platform T=ball Y=COM U=switch I=pause");
+	DemoApplication::displayProfileString(10,20,"Q=quit E=reset R=platform S=Toggle Torus T=ball Y=COM U=switch I=pause");
 
 	// Display time elapsed
 	std::ostringstream osstmp;
@@ -263,7 +270,7 @@ void Application::update(float ms) {
 	m_creature->update((int)(m_currentTime - m_startTime), ms);
 #endif
 	// Display info
-	DemoApplication::displayProfileString(10, 20, "Q=quit E=reset R=platform T=ball Y=COM U=switch I=pause");
+	DemoApplication::displayProfileString(10, 20, "Q=quit E=reset R=platform S=Toggle Torus T=ball Y=COM U=switch I=pause");
 
 	// Display time elapsed
 	std::ostringstream osstmp;

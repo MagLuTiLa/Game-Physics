@@ -53,6 +53,8 @@ protected:
 	DWORD m_currentTime;	// Time counter
 	int m_elapsedTime;		// Time elapsed in 10e-1 sec
 
+	bool spawnTorus = false;
+
 };
 
 #endif
