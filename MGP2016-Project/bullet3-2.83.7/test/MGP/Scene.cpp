@@ -6,7 +6,7 @@ Scene::Scene (btDynamicsWorld* ownerWorld) : m_ownerWorld(ownerWorld), m_ball(NU
     
     //Seed random generator
     srand(time(NULL));
-	
+
     // Setup the collision shapes
 	m_platform_shape = new btBoxShape(btVector3(btScalar(0.8),btScalar(0.02),btScalar(0.8)));
 	m_platform_shape->setColor(btVector3(btScalar(0.3),btScalar(0.3),btScalar(1.0)));
@@ -22,7 +22,10 @@ Scene::Scene (btDynamicsWorld* ownerWorld) : m_ownerWorld(ownerWorld), m_ball(NU
 	transform.setOrigin(btVector3(btScalar(0.0), btScalar(0.5), btScalar(0.0)));
 	m_platform = m_ownerWorld->localCreateRigidBody(btScalar(0.0), offset*transform, m_platform_shape);
 	m_platform->setCollisionFlags(m_platform->getCollisionFlags() | btCollisionObject::CF_KINEMATIC_OBJECT);
+
 	m_platform->setActivationState(DISABLE_DEACTIVATION);
+
+
 	m_axisToRotatePlatform = rand() % 3;
 	m_signToRotatePlatform = rand() % 2;
 	m_magnitudeToRotatePlatform = btScalar(0.0);
