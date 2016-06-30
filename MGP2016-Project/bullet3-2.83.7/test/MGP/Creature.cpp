@@ -588,15 +588,15 @@ void Creature::update(int elapsedTime, float ms)
 	{
 		// foot
 		PIDController* pidController;
-		pidController = new PIDController(50.0f, 0.0f, 50.0f);
+		pidController = new PIDController(5.0f, 0.0f, 5.0f);
 		m_PIDs[Creature::BODYPART_FOOT] = pidController;
 
 		// lower_leg
-		pidController = new PIDController(80.0, 0.03f, 80.0f);
+		pidController = new PIDController(8.0, 0.003f, 8.0f);
 		m_PIDs[Creature::BODYPART_LOWER_LEG] = pidController;
 
 		// upper_leg
-		pidController = new PIDController(80.0f, 0.05f, 80.0f);
+		pidController = new PIDController(8.0f, 0.005f, 8.0f);
 		m_PIDs[Creature::BODYPART_UPPER_LEG] = pidController;
 
 		op_flag = false;

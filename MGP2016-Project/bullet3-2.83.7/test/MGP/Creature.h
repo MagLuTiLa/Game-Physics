@@ -5,13 +5,13 @@
 #include "btBulletDynamicsCommon.h"
 
 // Switch Modes, modify to extend modes
-#if 0		
+#if 0	
 #define BASIC_BALANCE		// Basic balancing mode
-#elif 0		
+#elif 0
 #define EXTRA_LIMB			// Balancing mode with extra limb
-#elif 1		
+#elif 1
 #define ADV_BALANCE			// Advanced balancing mode
-#elif 0		
+#elif 0
 #define POS_DEPEND			// The pose-dependent balancing mode
 #endif
 
