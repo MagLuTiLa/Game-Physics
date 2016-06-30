@@ -100,7 +100,108 @@
 #endif
 
 Creature::Creature (btDynamicsWorld* ownerWorld, const btVector3& positionOffset) : m_ownerWorld (ownerWorld), m_hasFallen(false), lastChange(0), m_showCOM(false), m_time_step(10.0f) { // Constructor
-#if defined BASIC_BALANCE		
+#if defined MANY_JOINT																																										 // Setup the collision shape																																											 //*m_shapes = new btCollisionShape[6];
+	m_shapes[Creature::BODYPART_FOOT] = new btBoxShape(btVector3(btScalar(0.1), btScalar(0.025), btScalar(0.12)));
+	m_shapes[Creature::BODYPART_LEG_0] = new btCapsuleShape(btScalar(0.05), btScalar(0.30));
+	m_shapes[Creature::BODYPART_LEG_1] = new btCapsuleShape(btScalar(0.05), btScalar(0.25));
+	m_shapes[Creature::BODYPART_LEG_2] = new btCapsuleShape(btScalar(0.05), btScalar(0.20));
+	m_shapes[Creature::BODYPART_LEG_3] = new btCapsuleShape(btScalar(0.05), btScalar(0.15));
+	m_shapes[Creature::BODYPART_LEG_4] = new btCapsuleShape(btScalar(0.05), btScalar(0.10));
+	for (int i = 0; i < BODYPART_COUNT; ++i)
+		m_shapes[i]->setColor(btVector3(btScalar(0.6), btScalar(0.6), btScalar(0.6)));
+
+	// Setup the body properties
+	btTransform offset; offset.setIdentity();
+	offset.setOrigin(positionOffset); // absolute initial starting position
+	btTransform transform;
+
+	// FOOT
+	transform.setIdentity();
+	transform.setOrigin(btVector3(btScalar(0.0), btScalar(0.0), btScalar(0.0)));
+	m_bodies[Creature::BODYPART_FOOT] = m_ownerWorld->localCreateRigidBody(btScalar(5.0), offset*transform, m_shapes[Creature::BODYPART_FOOT]);
+
+	transform.setIdentity();
+	transform.setOrigin(btVector3(btScalar(0.0), btScalar(0.175), btScalar(0.0)));
+	m_bodies[Creature::BODYPART_LEG_0] = m_ownerWorld->localCreateRigidBody(btScalar(3.0), offset*transform, m_shapes[Creature::BODYPART_LEG_0]);
+	transform.setIdentity();
+	transform.setOrigin(btVector3(btScalar(0.0), btScalar(0.15), btScalar(0.0)));
+	m_bodies[Creature::BODYPART_LEG_1] = m_ownerWorld->localCreateRigidBody(btScalar(2.5), offset*transform, m_shapes[Creature::BODYPART_LEG_1]);
+	transform.setIdentity();
+	transform.setOrigin(btVector3(btScalar(0.0), btScalar(0.125), btScalar(0.0)));
+	m_bodies[Creature::BODYPART_LEG_2] = m_ownerWorld->localCreateRigidBody(btScalar(2.0), offset*transform, m_shapes[Creature::BODYPART_LEG_2]);
+	transform.setIdentity();
+	transform.setOrigin(btVector3(btScalar(0.0), btScalar(0.1), btScalar(0.0)));
+	m_bodies[Creature::BODYPART_LEG_3] = m_ownerWorld->localCreateRigidBody(btScalar(1.5), offset*transform, m_shapes[Creature::BODYPART_LEG_3]);
+	transform.setIdentity();
+	transform.setOrigin(btVector3(btScalar(0.0), btScalar(0.075), btScalar(0.0)));
+	m_bodies[Creature::BODYPART_LEG_4] = m_ownerWorld->localCreateRigidBody(btScalar(1.0), offset*transform, m_shapes[Creature::BODYPART_LEG_4]);
+
+
+	targetOrientation = m_bodies[Creature::BODYPART_FOOT]->getOrientation();
+
+	// Add damping to the rigid bodies
+	for (int i = 1; i < BODYPART_COUNT; ++i) {
+		m_bodies[i]->setDamping(btScalar(0.01), btScalar(0.01));
+		m_bodies[i]->setDeactivationTime(btScalar(0.01));
+		m_bodies[i]->setSleepingThresholds(btScalar(5.0), btScalar(5.0));
+	}
+	m_bodies[Creature::BODYPART_FOOT]->setDamping(btScalar(1.8), btScalar(0.01)); // Higher friction for foot
+													  
+	btPoint2PointConstraint* balljoint;
+	btVector3 foot_leg0 = btVector3(0.0, 0.025, 0.0);
+	btVector3 leg0_foot = btVector3(0.0, -0.15, 0.0);
+	btVector3 leg0_leg1 = btVector3(0.0, 0.15, 0.0);
+	btVector3 leg1_leg0 = btVector3(0.0, -0.125, 0.0);
+	btVector3 leg1_leg2 = btVector3(0.0, 0.125, 0.0);
+	btVector3 leg2_leg1 = btVector3(0.0, -0.10, 0.0);
+	btVector3 leg2_leg3 = btVector3(0.0, 0.10, 0.0);
+	btVector3 leg3_leg2 = btVector3(0.0, -0.075, 0.0);
+	btVector3 leg3_leg4 = btVector3(0.0, 0.075, 0.0);
+	btVector3 leg4_leg3 = btVector3(0.0, -0.05, 0.0);
+
+	balljoint = new btPoint2PointConstraint(*m_bodies[Creature::BODYPART_FOOT], *m_bodies[Creature::BODYPART_LEG_0],
+		foot_leg0, leg0_foot);
+	m_joints[Creature::JOINT_0] = balljoint;
+	m_ownerWorld->addConstraint(m_joints[Creature::JOINT_0], true);
+
+	balljoint = new btPoint2PointConstraint(*m_bodies[Creature::BODYPART_LEG_0], *m_bodies[Creature::BODYPART_LEG_1],
+		leg0_leg1, leg1_leg0);
+	m_joints[Creature::JOINT_1] = balljoint;
+	m_ownerWorld->addConstraint(m_joints[Creature::JOINT_1], true);
+
+	balljoint = new btPoint2PointConstraint(*m_bodies[Creature::BODYPART_LEG_1], *m_bodies[Creature::BODYPART_LEG_2],
+		leg1_leg2, leg2_leg1);
+	m_joints[Creature::JOINT_2] = balljoint;
+	m_ownerWorld->addConstraint(m_joints[Creature::JOINT_2], true);
+
+	balljoint = new btPoint2PointConstraint(*m_bodies[Creature::BODYPART_LEG_2], *m_bodies[Creature::BODYPART_LEG_3],
+		leg2_leg3, leg3_leg2);
+	m_joints[Creature::JOINT_3] = balljoint;
+	m_ownerWorld->addConstraint(m_joints[Creature::JOINT_3], true);
+
+	balljoint = new btPoint2PointConstraint(*m_bodies[Creature::BODYPART_LEG_3], *m_bodies[Creature::BODYPART_LEG_4],
+		leg3_leg4, leg4_leg3);
+	m_joints[Creature::JOINT_4] = balljoint;
+	m_ownerWorld->addConstraint(m_joints[Creature::JOINT_4], true);
+
+
+
+	// Setup the PID controllers (every bodypart has its own PID)
+	// =========================
+	PIDController* pidController;
+
+	// foot
+	pidController = new PIDController(8.0f, 0.0f, 8.0f);
+	m_PIDs[Creature::BODYPART_FOOT] = pidController;
+
+	// lower_leg
+	pidController = new PIDController(35.0, 0.0f, 35.0f);
+	for (int i = 1; i < BODYPART_COUNT; ++i)
+		m_PIDs[i] = pidController;
+
+	op_flag = true;
+
+#elif defined BASIC_BALANCE		
 		// Setup the rigid bodies
 		// ======================
 
@@ -369,15 +470,13 @@ Creature::Creature (btDynamicsWorld* ownerWorld, const btVector3& positionOffset
 	m_PIDs[Creature::BODYPART_UPPER_LEG] = pidController;				
 																		
 	op_flag = true;
-	
-#elif defined MANY_JOINT
-
 #endif
 }
 
 Creature::~Creature() { // Destructor
 		// Remove all joint constraints
-		for (int i = 0; i < Creature::JOINT_COUNT; ++i) {
+#if defined MANY_JOINT
+		for (int i = 0; i < Creature::BODYPART_COUNT; ++i) {
 			m_ownerWorld->removeConstraint(m_joints[i]);
 			delete m_joints[i]; m_joints[i] = NULL;
 		}		
@@ -394,6 +493,25 @@ Creature::~Creature() { // Destructor
 			delete m_COM; m_COM = NULL;
 			delete m_COMShape; m_COMShape = NULL;
 		}
+#else
+	for (int i = 0; i < Creature::JOINT_COUNT; ++i) {
+		m_ownerWorld->removeConstraint(m_joints[i]);
+		delete m_joints[i]; m_joints[i] = NULL;
+	}
+	// Remove all bodies and shapes
+	for (int i = 0; i < Creature::BODYPART_COUNT; ++i) {
+		m_ownerWorld->removeRigidBody(m_bodies[i]);
+		delete m_bodies[i]->getMotionState();
+		delete m_bodies[i]; m_bodies[i] = NULL;
+		delete m_shapes[i]; m_shapes[i] = NULL;
+	}
+	if (m_showCOM) {
+		m_ownerWorld->removeRigidBody(m_COM);
+		delete m_COM->getMotionState();
+		delete m_COM; m_COM = NULL;
+		delete m_COMShape; m_COMShape = NULL;
+	}
+#endif
 }
 
 void Creature::switchCOM() {
@@ -433,6 +551,7 @@ void Creature::update(int elapsedTime) {
 		m_COM->getMotionState()->setWorldTransform(transform);
 	}
 
+#if defined BASIC_BALANCE
 	// Step 1.2: Update pose only if creature did not fall
 	if (m_hasFallen) {
 		if (((btHingeConstraint*)m_joints[Creature::JOINT_ANKLE])->getEnableAngularMotor()) { // ragdoll is fallen
@@ -441,8 +560,6 @@ void Creature::update(int elapsedTime) {
 		}
 		return;
 	}
-
-#if defined BASIC_BALANCE
 
 	if (elapsedTime - lastChange > m_time_step) { // Update balance control only every 10 ms
 		lastChange = elapsedTime;
@@ -457,7 +574,7 @@ void Creature::update(int elapsedTime) {
 		CSP_project = btVector3(CSP.x(), 0.0f, CSP.z());
 		// The ground-projected COM
 		COM_project = btVector3(m_positionCOM.x(), 0.0f, m_positionCOM.z());
-		
+
 		// ANKLE
 		// -----
 		btVector3 CSP_project_foot, COM_project_foot;
@@ -485,13 +602,13 @@ void Creature::update(int elapsedTime) {
 			btTransform leg_system = m_bodies[Creature::BODYPART_LOWER_LEG]->getWorldTransform().inverse();
 			// Step 4.1: Describe the ground projected CSP in lower leg coordinate system
 			CSP_project_leg = leg_system * CSP_project;
-			
+
 			// Step 4.2: Describe the ground projected COM in lower leg coordinate system
 			COM_project_leg = leg_system * COM_project;
-			
+
 			// Step 4.3: Calculate the balance error solveable by a knee rotation (inverted pendulum model)
 			btVector3 error_leg = CSP_project_leg - COM_project_leg;
-			
+
 			// Step 4.4: Feed the error to the PD controller and apply resulting 'torque' (here angular motor velocity)
 			// (Conversion between error to torque/motor velocity done by gains in PD controller)
 			btScalar torque_knee = m_PIDs[Creature::JOINT_KNEE]->solve(error_leg.x(), m_time_step);
@@ -501,6 +618,14 @@ void Creature::update(int elapsedTime) {
 		//===========================================//
 	}
 #elif defined EXTRA_LIMB
+	// Step 1.2: Update pose only if creature did not fall
+	if (m_hasFallen) {
+		if (((btHingeConstraint*)m_joints[Creature::JOINT_ANKLE])->getEnableAngularMotor()) { // ragdoll is fallen
+			((btHingeConstraint*)m_joints[Creature::JOINT_ANKLE])->enableMotor(false);
+			((btHingeConstraint*)m_joints[Creature::JOINT_KNEE])->enableMotor(false);
+		}
+		return;
+	}
 	if (elapsedTime - lastChange > m_time_step) { // Update balance control only every 10 ms
 		lastChange = elapsedTime;
 
@@ -580,10 +705,76 @@ void Creature::update(int elapsedTime) {
 		}
 		//===========================================//
 	}
-#elif defined MANY_JOINT
-
 #endif
 }
+#if defined MANY_JOINT
+void Creature::update(int elapsedTime, float ms)
+{
+	// different computer has different properties, this method is used to better sync timestep
+	if (op_flag && ms > 2000 && ms < 3000) {
+		// foot
+		PIDController* pidController;
+		pidController = new PIDController(5.0f, 0.0f, 5.0f);
+		m_PIDs[Creature::BODYPART_FOOT] = pidController;
+
+		// lower_leg
+		pidController = new PIDController(60.0, 0.03f, 60.0f);
+		for (int i = 1; i < BODYPART_COUNT; ++i) {
+			m_PIDs[i] = pidController;
+		}
+
+		op_flag = false;
+	}
+	// BALANCE CONTROLLER
+	// ==================
+
+	// Step 1.1: Compute the COM in world coordinate system
+	btVector3 comInWorld = computeCenterOfMass();
+	m_positionCOM = comInWorld;
+	if (m_showCOM)
+	{ // Visualize COM
+		btTransform transform;
+		m_COM->getMotionState()->getWorldTransform(transform);
+		transform.setOrigin(comInWorld);
+		m_COM->getMotionState()->setWorldTransform(transform);
+	}
+
+	// Step 1.2: Update pose only if creature did not fall
+	if (m_hasFallen)
+	{
+		return;
+	}
+
+	if (elapsedTime - lastChange > m_time_step)
+	{	// Update balance control only every 10 ms
+		//target orientation is vertical direction for each body part
+		for (int i = 0; i < BODYPART_COUNT; ++i)
+		{
+			// set angular velocity to 0
+			m_bodies[i]->setAngularVelocity(btVector3(0.0, 0.0, 0.0));
+			// get oritentation of this body part
+			btQuaternion bodyOrientation = m_bodies[i]->getOrientation();
+			// get angle differartion
+			btQuaternion deltaOrientation = targetOrientation * bodyOrientation.inverse();
+			// compute euler angle
+			btVector3 deltaEuler = QuaternionToEulerXYZ(deltaOrientation);
+			if (deltaEuler.norm() > 0.01)
+			{
+				// PID controller, but apply to vector.
+				//btVector3 torque = control(deltaEuler);
+				btVector3 torque = m_PIDs[i]->solve(deltaEuler, m_time_step);
+				// apply torque impulse to body, instead of to joints
+				if (!op_flag)
+					m_bodies[i]->applyTorqueImpulse(torque*ms * 0.00001);
+				else m_bodies[i]->applyTorqueImpulse(torque*ms * 0.000001);
+				//m_bodies[i]->applyTorque(torque);
+			}
+		}
+		lastChange = elapsedTime;
+	}
+}
+#endif
+
 
 #if defined ADV_BALANCE
 void Creature::update(int elapsedTime, float ms)
@@ -656,6 +847,20 @@ void Creature::update(int elapsedTime, float ms)
 }
 #endif
 
+#if defined MANY_JOINT
+bool Creature::hasFallen(){
+	if (m_hasFallen) return m_hasFallen; // true if already down (cannot get back up here)
+	for (int i = 1; i < 6; ++i) {
+		if (m_bodies[i]->getActivationState() == ISLAND_SLEEPING) m_hasFallen = true; // true if enters in sleeping mode
+		if (m_bodies[i]->getCenterOfMassPosition().getY() < 0.15 ||
+			m_bodies[i]->getCenterOfMassPosition().getY() < 0.15 ||
+			m_bodies[BODYPART_FOOT]->getCenterOfMassPosition().getY() < 0.15) m_hasFallen = true; // true if a creature has fallen from platform
+		if (m_bodies[i]->getCenterOfMassPosition().getY() > m_bodies[i]->getCenterOfMassPosition().getY()) m_hasFallen = true; // true if align with ground
+		if (m_bodies[BODYPART_FOOT]->getCenterOfMassPosition().getY() > m_bodies[i]->getCenterOfMassPosition().getY()) m_hasFallen = true; // true if align with ground
+	}
+	return m_hasFallen;
+}
+#else
 bool Creature::hasFallen() {
 	if (m_hasFallen) return m_hasFallen; // true if already down (cannot get back up here)
 	if (m_bodies[BODYPART_LOWER_LEG]->getActivationState() == ISLAND_SLEEPING) m_hasFallen = true; // true if enters in sleeping mode
@@ -666,6 +871,7 @@ bool Creature::hasFallen() {
 	if (m_bodies[BODYPART_FOOT]->getCenterOfMassPosition().getY() > m_bodies[BODYPART_LOWER_LEG]->getCenterOfMassPosition().getY()) m_hasFallen = true; // true if align with ground
 	return m_hasFallen;
 }
+#endif
 
 btVector3 Creature::computeCenterOfMass() {
 
