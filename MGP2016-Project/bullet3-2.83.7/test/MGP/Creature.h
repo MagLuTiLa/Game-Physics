@@ -9,10 +9,12 @@
 #define BASIC_BALANCE		// Basic balancing mode
 #elif 0		
 #define EXTRA_LIMB			// Balancing mode with extra limb
-#elif 1		
+#elif 0		
 #define ADV_BALANCE			// Advanced balancing mode
 #elif 0		
 #define POS_DEPEND			// The pose-dependent balancing mode
+#elif 1
+#define MANY_JOINT			// The many joints leg mode
 #endif
 
 class PIDController;
@@ -46,7 +48,9 @@ protected:
 #elif defined ADV_BALANCE
 	enum { BODYPART_FOOT, BODYPART_LOWER_LEG, BODYPART_UPPER_LEG, BODYPART_COUNT }; // Body parts of the creature
 	enum { JOINT_ANKLE, JOINT_KNEE, JOINT_COUNT }; // Joints of the creature
-
+#elif defined MANY_JOINT
+	enum { BODYPART_FOOT, BODYPART_LOWER_LEG, BODYPART_UPPER_LEG, BODYPART_COUNT }; // Body parts of the creature
+	enum { JOINT_ANKLE, JOINT_KNEE, JOINT_COUNT }; // Joints of the creature
 #endif
 
 	btDynamicsWorld		*	m_ownerWorld;				// The physics world of the simulation

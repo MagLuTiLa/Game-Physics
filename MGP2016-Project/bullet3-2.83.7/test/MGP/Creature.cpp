@@ -369,6 +369,9 @@ Creature::Creature (btDynamicsWorld* ownerWorld, const btVector3& positionOffset
 	m_PIDs[Creature::BODYPART_UPPER_LEG] = pidController;				
 																		
 	op_flag = true;
+	
+#elif defined MANY_JOINT
+
 #endif
 }
 
@@ -577,6 +580,8 @@ void Creature::update(int elapsedTime) {
 		}
 		//===========================================//
 	}
+#elif defined MANY_JOINT
+
 #endif
 }
 
