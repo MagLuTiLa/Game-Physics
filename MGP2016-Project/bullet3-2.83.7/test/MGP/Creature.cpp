@@ -727,8 +727,14 @@ void Creature::update(int elapsedTime) {
 void Creature::update(int elapsedTime, float ms)
 {
 	// different computer has different properties, this method is used to better sync timestep
-	if (op_flag == 0 && ms > 2000 && ms < 3000) {
+	if (ms > 2000 && ms < 3000) {
 		op_flag = 1;
+	}
+	else if (ms > 3000 && ms < 4500) {
+		op_flag = 2;
+	}
+	else if (ms > 4000 && ms < 7000) {
+		op_flag = 3;
 	}
 	// BALANCE CONTROLLER
 	// ==================
@@ -775,6 +781,10 @@ void Creature::update(int elapsedTime, float ms)
 				// apply torque impulse to body, instead of to joints
 				if (op_flag == 1)
 					m_bodies[i]->applyTorqueImpulse(torque*ms * 0.000006);
+				else if(op_flag == 2)
+					m_bodies[i]->applyTorqueImpulse(torque*ms * 0.000004);
+				else if (op_flag == 3)
+					m_bodies[i]->applyTorqueImpulse(torque*ms * 0.000003);
 				else m_bodies[i]->applyTorqueImpulse(torque*ms * 0.000001);
 			}
 		}
