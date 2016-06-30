@@ -36,8 +36,6 @@ protected:
 
 	void resetScene(const btVector3& startOffset);	// Reset the creature
 	void update();									// Update objects and display the time elapsed under balance
-	void update(float ms);							// Update objects and display the time elapsed under balance with input time
-
 
 	Creature						*	m_creature;		// The creature
 	Scene							*	m_scene;		// The scene

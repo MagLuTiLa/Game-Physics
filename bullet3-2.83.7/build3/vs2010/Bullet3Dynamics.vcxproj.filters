@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="src">
+      <UniqueIdentifier>{FA8D99DA-3E2A-6C4B-9FD6-2A603A6E2566}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Bullet3Dynamics">
+      <UniqueIdentifier>{D3530547-0DB3-A249-9AE9-DDFEF5EBA96A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Bullet3Dynamics\ConstraintSolver">
+      <UniqueIdentifier>{836D05D8-86B9-9B47-A402-799DC15F3E23}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Bullet3Dynamics\shared">
+      <UniqueIdentifier>{96933593-E93B-C545-A583-2A0B77963B55}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\src\Bullet3Dynamics\b3CpuRigidBodyPipeline.h">
+      <Filter>src\Bullet3Dynamics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Bullet3Dynamics\ConstraintSolver\b3ContactSolverInfo.h">
+      <Filter>src\Bullet3Dynamics\ConstraintSolver</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Bullet3Dynamics\ConstraintSolver\b3FixedConstraint.h">
+      <Filter>src\Bullet3Dynamics\ConstraintSolver</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Bullet3Dynamics\ConstraintSolver\b3Generic6DofConstraint.h">
+      <Filter>src\Bullet3Dynamics\ConstraintSolver</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Bullet3Dynamics\ConstraintSolver\b3JacobianEntry.h">
+      <Filter>src\Bullet3Dynamics\ConstraintSolver</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Bullet3Dynamics\ConstraintSolver\b3PgsJacobiSolver.h">
+      <Filter>src\Bullet3Dynamics\ConstraintSolver</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Bullet3Dynamics\ConstraintSolver\b3Point2PointConstraint.h">
+      <Filter>src\Bullet3Dynamics\ConstraintSolver</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Bullet3Dynamics\ConstraintSolver\b3SolverBody.h">
+      <Filter>src\Bullet3Dynamics\ConstraintSolver</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Bullet3Dynamics\ConstraintSolver\b3SolverConstraint.h">
+      <Filter>src\Bullet3Dynamics\ConstraintSolver</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Bullet3Dynamics\ConstraintSolver\b3TypedConstraint.h">
+      <Filter>src\Bullet3Dynamics\ConstraintSolver</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Bullet3Dynamics\shared\b3ContactConstraint4.h">
+      <Filter>src\Bullet3Dynamics\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Bullet3Dynamics\shared\b3ConvertConstraint4.h">
+      <Filter>src\Bullet3Dynamics\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Bullet3Dynamics\shared\b3Inertia.h">
+      <Filter>src\Bullet3Dynamics\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Bullet3Dynamics\shared\b3IntegrateTransforms.h">
+      <Filter>src\Bullet3Dynamics\shared</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\Bullet3Dynamics\b3CpuRigidBodyPipeline.cpp">
+      <Filter>src\Bullet3Dynamics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Bullet3Dynamics\ConstraintSolver\b3FixedConstraint.cpp">
+      <Filter>src\Bullet3Dynamics\ConstraintSolver</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Bullet3Dynamics\ConstraintSolver\b3Generic6DofConstraint.cpp">
+      <Filter>src\Bullet3Dynamics\ConstraintSolver</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Bullet3Dynamics\ConstraintSolver\b3PgsJacobiSolver.cpp">
+      <Filter>src\Bullet3Dynamics\ConstraintSolver</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Bullet3Dynamics\ConstraintSolver\b3Point2PointConstraint.cpp">
+      <Filter>src\Bullet3Dynamics\ConstraintSolver</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Bullet3Dynamics\ConstraintSolver\b3TypedConstraint.cpp">
+      <Filter>src\Bullet3Dynamics\ConstraintSolver</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
