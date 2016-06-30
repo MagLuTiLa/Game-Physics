@@ -13,7 +13,8 @@
 #define M_PI_4     0.785398163397448309616
 #define EPSILON	   0.0000001f
 #define ACTION_BIAS 0.00001f
-#define MAX_TORQUE 42.0000f
+#define MAX_TORQUE 50.0000f
+
 
 // Tune PID parameters here, please tune each set separately, i.e. p&i&d for different modes
 #if defined BASIC_BALANCE
@@ -214,7 +215,7 @@ Creature::Creature (btDynamicsWorld* ownerWorld, const btVector3& positionOffset
 	for (int i = 1; i < BODYPART_COUNT; ++i)
 		m_PIDs[i] = pidController;
 
-	op_flag = true;
+	op_flag = 0;
 
 #elif defined BASIC_BALANCE		
 		// Setup the rigid bodies
@@ -726,19 +727,8 @@ void Creature::update(int elapsedTime) {
 void Creature::update(int elapsedTime, float ms)
 {
 	// different computer has different properties, this method is used to better sync timestep
-	if (op_flag && ms > 2000 && ms < 3000) {
-		// foot
-		PIDController* pidController;
-		pidController = new PIDController(5.0f, 0.0f, 5.0f);
-		m_PIDs[Creature::BODYPART_FOOT] = pidController;
-
-		// lower_leg
-		pidController = new PIDController(60.0, 0.03f, 60.0f);
-		for (int i = 1; i < BODYPART_COUNT; ++i) {
-			m_PIDs[i] = pidController;
-		}
-
-		op_flag = false;
+	if (op_flag == 0 && ms > 2000 && ms < 3000) {
+		op_flag = 1;
 	}
 	// BALANCE CONTROLLER
 	// ==================
@@ -783,8 +773,8 @@ void Creature::update(int elapsedTime, float ms)
 					else m_ownerWorld->removeConstraint(m_joints[0]);
 				}
 				// apply torque impulse to body, instead of to joints
-				if (!op_flag)
-					m_bodies[i]->applyTorqueImpulse(torque*ms * 0.00001);
+				if (op_flag == 1)
+					m_bodies[i]->applyTorqueImpulse(torque*ms * 0.000006);
 				else m_bodies[i]->applyTorqueImpulse(torque*ms * 0.000001);
 			}
 		}

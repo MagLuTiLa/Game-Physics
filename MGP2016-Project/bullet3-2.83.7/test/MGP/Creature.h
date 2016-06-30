@@ -90,11 +90,11 @@ protected:
 #endif
 #if defined ADV_BALANCE
 	btQuaternion			targetOrientation;
-	bool					op_flag;
+	int					op_flag;
 #endif
 #if defined MANY_JOINT
 	btQuaternion			targetOrientation;
-	bool					op_flag;
+	int					op_flag;
 #endif
 };
 
