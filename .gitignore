@@ -237,3 +237,4 @@ _Pvt_Extensions
 .fake/
 
 *.Bullet3Demo.txt
+MGP2016-Project/bullet3-2.83.7/test/MGP/Creature.cpp

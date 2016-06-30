@@ -23,14 +23,15 @@ public:
 
 protected:
 
-	enum {BODYPART_FOOT,BODYPART_LOWER_LEG,BODYPART_UPPER_LEG,BODYPART_COUNT}; // Body parts of the creature
+	enum {BODYPART_FOOT,BODYPART_LEG_0,BODYPART_LEG_1, BODYPART_LEG_2, BODYPART_LEG_3,
+		BODYPART_LEG_4, BODYPART_COUNT}; // Body parts of the creature
 
-	enum {JOINT_ANKLE,JOINT_KNEE,JOINT_COUNT}; // Joints of the creature
+	enum { JOINT_0, JOINT_1, JOINT_2, JOINT_3, JOINT_4, JOINT_COUNT }; // Joints of the creature
 
 	btDynamicsWorld		*	m_ownerWorld;				// The physics world of the simulation
 	btCollisionShape	*	m_shapes[BODYPART_COUNT];	// The primitive shape of each body part used in collision
 	btRigidBody			*	m_bodies[BODYPART_COUNT];	// The array of body parts
-	//btHingeConstraint	*	m_joints[JOINT_COUNT];		// The type of each joint constraint
+	// The type of each joint constraint
 	btPoint2PointConstraint	*	m_joints[JOINT_COUNT];
 
 	int lastChange;										// Time of last change of balance controller
