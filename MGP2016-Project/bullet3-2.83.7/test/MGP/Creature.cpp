@@ -12,7 +12,8 @@
 #define M_PI_2     1.57079632679489661923
 #define M_PI_4     0.785398163397448309616
 #define EPSILON	   0.0000001f
-#define ACTION_BIAS	0.00001f
+#define ACTION_BIAS 0.00001f
+#define MAX_TORQUE 34.0000f
 
 // Tune PID parameters here, please tune each set separately, i.e. p&i&d for different modes
 #if defined BASIC_BALANCE
@@ -776,6 +777,11 @@ void Creature::update(int elapsedTime, float ms)
 			{
 				// PID controller, but apply to vector.
 				btVector3 torque = m_PIDs[i]->solve(deltaEuler, m_time_step);
+				if (torque.length() > MAX_TORQUE) {
+					m_hasFallen = true;
+					if(i >= 1) m_ownerWorld->removeConstraint(m_joints[i-1]);
+					else m_ownerWorld->removeConstraint(m_joints[0]);
+				}
 				// apply torque impulse to body, instead of to joints
 				if (!op_flag)
 					m_bodies[i]->applyTorqueImpulse(torque*ms * 0.00001);
