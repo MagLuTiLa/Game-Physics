@@ -7,6 +7,8 @@
 #include "bulletSoftBody/btSoftBodyHelpers.h"
 #include <iostream>
 
+#define HAIRNUMBER 10
+
 class Creature {
 
 public:
@@ -31,7 +33,7 @@ protected:
 	btCollisionShape	*	m_shapes[BODYPART_COUNT];	// The primitive shape of each body part used in collision
 	btRigidBody			*	m_bodies[BODYPART_COUNT];	// The array of body parts
 	btTypedConstraint	*	m_joints[JOINT_COUNT];		// The type of each joint constraint
-	btSoftBody			*	m_tail;
+	btSoftBody			*	m_tail[HAIRNUMBER];
 
 	int lastChange;										// Time of last change of balance controller
 

@@ -50,13 +50,21 @@ Creature::Creature (btDynamicsWorld* ownerWorld, const btSoftBodyWorldInfo& worl
 		transform.setIdentity();
 		btTransform end = transform;
 		transform.setOrigin(m_bodies[Creature::BODYPART_UPPER_LEG]->getCenterOfMassPosition() + btVector3(btScalar(0.02), btScalar(0.0), btScalar(0.0)));
-		end.setOrigin(btVector3(0.0, 2, 0));
+		end.setOrigin(btVector3(0.0, -0.1, 0));
 		//m_bodies[Creature::BODYPART_PONYTAIL] = m_ownerWorld->localCreateRigidBody(btScalar(1.0), offset*transform, m_shapes[Creature::BODYPART_PONYTAIL]);
-		m_tail = btSoftBodyHelpers::CreateRope(m_worldInfo, (offset*end).getOrigin(), transform.getOrigin(),16,2);
-		((btSoftRigidDynamicsWorld*)ownerWorld)->addSoftBody(m_tail, 1 << 1,0);
-		m_tail->generateBendingConstraints(2);
-		m_tail->m_cfg.piterations = 15;
-		m_tail->randomizeConstraints();
+
+		for (int i = 0; i < HAIRNUMBER; ++i)
+		{
+
+			m_tail[i] = btSoftBodyHelpers::CreateRope(m_worldInfo, (offset*end).getOrigin(), transform.getOrigin(), 16, 0);
+
+			//m_tail->appendAnchor(m_tail->m_nodes.size() - 1, m_bodies[Creature::BODYPART_UPPER_LEG]);
+
+			m_tail[i]->getCollisionShape()->setMargin(btScalar(0.1f));
+			m_tail[i]->appendAnchor(m_tail[i]->m_nodes.size() - 1, m_bodies[Creature::BODYPART_UPPER_LEG]);
+			//((btSoftRigidDynamicsWorld*)ownerWorld)->addSoftBody(m_tail[i], 1 << 1,0);
+			((btSoftRigidDynamicsWorld*)ownerWorld)->addSoftBody(m_tail[i]);
+		}
 
 		// Add damping to the rigid bodies
 		for (int i = 0; i < Creature::BODYPART_COUNT; ++i) {
@@ -100,18 +108,18 @@ Creature::Creature (btDynamicsWorld* ownerWorld, const btSoftBodyWorldInfo& worl
 		m_ownerWorld->addConstraint(m_joints[JOINT_KNEE], true);
 
 		// TAIL
-		localA.setIdentity(); localB.setIdentity();
-		localA.getBasis().setEulerZYX(0, btScalar(M_PI_2), 0); localA.setOrigin(btVector3(btScalar(0.0), btScalar(0.025), btScalar(0.0)));
-		localB.getBasis().setEulerZYX(0, btScalar(M_PI_2), 0); localB.setOrigin(btVector3(btScalar(0.0), btScalar(-0.25), btScalar(0.0)));
-		m_tail->appendAnchor(m_tail->m_nodes.size() - 1, m_bodies[Creature::BODYPART_UPPER_LEG]);
+		//localA.setIdentity(); localB.setIdentity();
+		//localA.getBasis().setEulerZYX(0, btScalar(M_PI_2), 0); localA.setOrigin(btVector3(btScalar(0.0), btScalar(0.025), btScalar(0.0)));
+		//localB.getBasis().setEulerZYX(0, btScalar(M_PI_2), 0); localB.setOrigin(btVector3(btScalar(0.0), btScalar(-0.25), btScalar(0.0)));
+		//m_tail->appendAnchor(m_tail->m_nodes.size() - 1, m_bodies[Creature::BODYPART_UPPER_LEG]);
 		//hingeJoint = new btHingeConstraint(*m_bodies[Creature::BODYPART_UPPER_LEG], *m_bodies[Creature::BODYPART_PONYTAIL], localA, localB);
-		hingeJoint->setLimit(btScalar(-M_PI_2), btScalar(M_PI_2));
+		//hingeJoint->setLimit(btScalar(-M_PI_2), btScalar(M_PI_2));
 
-		hingeJoint->enableAngularMotor(true,btScalar(0.0),btScalar(50.0)); //uncomment to allow for torque control
+		//hingeJoint->enableAngularMotor(true,btScalar(0.0),btScalar(50.0)); //uncomment to allow for torque control
 
-		m_joints[Creature::JOINT_TAIL] = hingeJoint;
-		hingeJoint->setDbgDrawSize(CONSTRAINT_DEBUG_SIZE);
-		m_ownerWorld->addConstraint(m_joints[Creature::JOINT_TAIL], true);
+		//m_joints[Creature::JOINT_TAIL] = hingeJoint;
+		//hingeJoint->setDbgDrawSize(CONSTRAINT_DEBUG_SIZE);
+		//m_ownerWorld->addConstraint(m_joints[Creature::JOINT_TAIL], true);
 
 }
 
