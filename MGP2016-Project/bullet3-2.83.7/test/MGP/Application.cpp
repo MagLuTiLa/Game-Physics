@@ -90,7 +90,7 @@ void Application::Init_Torus(const btVector3 &position)
 	btMatrix3x3	m;
 	m.setEulerZYX(0, 0, 0);
 	psb->transform(btTransform(m, position));
-	psb->setTotalMass(5, true);
+	psb->setTotalMass(100, true);
 	((btSoftRigidDynamicsWorld*)m_dynamicsWorld)->addSoftBody(psb);
 }
 
