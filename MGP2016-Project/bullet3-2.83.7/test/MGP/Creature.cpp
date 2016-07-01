@@ -5,6 +5,7 @@
 // TO DEBUG
 #include <iostream>
 #include <fstream>
+#include <math.h>
 
 #define CONSTRAINT_DEBUG_SIZE 0.2f
 
@@ -18,13 +19,13 @@
 
 // Tune PID parameters here, please tune each set separately, i.e. p&i&d for different modes
 #if defined BASIC_BALANCE
-	#define K_P_ANKLE	200.0f
-	#define K_I_ANKLE	0.01f
-	#define K_D_ANKLE	10.0f
+	#define K_P_ANKLE	100.0f
+	#define K_I_ANKLE	0.005f
+	#define K_D_ANKLE	1.0f
 
-	#define K_P_KNEE	150.0f
-	#define K_I_KNEE	0.1f
-	#define K_D_KNEE	10.0f
+	#define K_P_KNEE	100.0f
+	#define K_I_KNEE	0.5f
+	#define K_D_KNEE	2.0f
 
 #elif defined EXTRA_LIMB
 	#define K_P_ANKLE	200.0f
@@ -75,11 +76,11 @@
 	#define FOOT_W 0.100		// Width of the foot box
 	#define FOOT_L 0.120		// Length of the foot box 
 	#define FOOT_H 0.025		// Height of the foot box
-	#define FOOT_M 5.0			// Mass of FOOT
+	#define FOOT_M 7.0			// Mass of FOOT
 	#define FOOT_DAMP 0.80		// Friction of FOOT
 	#define LOW_LEG_R 0.05		// Radius of lower leg
 	#define LOW_LEG_H 0.50		// Height of lower leg
-	#define LOW_LEG_M 3.0		// Mass of lower leg
+	#define LOW_LEG_M 5.0		// Mass of lower leg
 	#define UP_LEG_R 0.05		// Radius of upper leg
 	#define UP_LEG_H 0.40		// Height of upper leg
 	#define UP_LEG_M 3.0		// Mass of upper leg
@@ -115,7 +116,7 @@
 
 #endif
 
-Creature::Creature (btDynamicsWorld* ownerWorld, const btVector3& positionOffset) : m_ownerWorld (ownerWorld), m_hasFallen(false), lastChange(0), m_showCOM(false), m_time_step(10.0f) { // Constructor
+Creature::Creature (btDynamicsWorld* ownerWorld, const btVector3& positionOffset) : m_ownerWorld (ownerWorld), m_hasFallen(false), lastChange(0), m_showCOM(false), m_time_step(1.0f) { // Constructor
 #if defined MANY_JOINT																																										 // Setup the collision shape																																											 //*m_shapes = new btCollisionShape[6];
 	m_shapes[Creature::BODYPART_FOOT] = new btBoxShape(btVector3(btScalar(0.1), btScalar(0.025), btScalar(0.12)));
 	m_shapes[Creature::BODYPART_LEG_0] = new btCapsuleShape(btScalar(0.05), btScalar(0.30));
@@ -608,7 +609,8 @@ void Creature::update(int elapsedTime) {
 
 			// Step 3.4: Feed the error to the PD controller and apply resulting 'torque' (here angular motor velocity)
 			// (Conversion between error to torque/motor velocity done by gains in PD controller)
-			btScalar torque_ankle = m_PIDs[Creature::JOINT_ANKLE]->solve(-1.0f*error_foot.z(), m_time_step);
+			//btScalar torque_ankle = m_PIDs[Creature::JOINT_ANKLE]->solve(-1.0f*error_foot.z(), m_time_step);
+			btScalar torque_ankle = m_PIDs[Creature::JOINT_ANKLE]->solve(-1.0f*asin(error_foot.z()/5.0f), m_time_step);
 			//m_joints[Creature::JOINT_ANKLE]->setMotorTarget(torque_ankle, m_time_step);			// This one uses 
 			m_joints[Creature::JOINT_ANKLE]->setMotorTargetVelocity(torque_ankle / m_time_step);	// This one uses velocity
 
@@ -627,7 +629,7 @@ void Creature::update(int elapsedTime) {
 
 			// Step 4.4: Feed the error to the PD controller and apply resulting 'torque' (here angular motor velocity)
 			// (Conversion between error to torque/motor velocity done by gains in PD controller)
-			btScalar torque_knee = m_PIDs[Creature::JOINT_KNEE]->solve(error_leg.x(), m_time_step);
+			btScalar torque_knee = m_PIDs[Creature::JOINT_KNEE]->solve(asin(error_leg.x()/5.0f), m_time_step);
 			//m_joints[Creature::JOINT_KNEE]->setMotorTarget(torque_knee, m_time_step);			
 			m_joints[Creature::JOINT_KNEE]->setMotorTargetVelocity(torque_knee / m_time_step);
 		}
